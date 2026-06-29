@@ -17,6 +17,8 @@ from statistics import median
 
 from geo import World, haversine_km
 from lib_fit import load_runs
+from lib_merge import merge_runs
+from lib_strava import load_strava
 
 HERE = Path(__file__).resolve().parent
 ZONES = ["Z1", "Z2", "Z3", "Z4", "Z5"]
@@ -222,9 +224,15 @@ def main():
     birth_year = int(cfg.get("birth_year") or 1990)
     rest_hr = float(cfg.get("resting_hr") or 48)
 
-    runs = load_runs(cache)
+    garmin_runs = load_runs(cache)
+    strava_runs = load_strava(cache)
+    runs = merge_runs(garmin_runs, strava_runs)
     if not runs:
-        sys.exit("No running activities found in the cache. Run fetch_garmin.py first.")
+        sys.exit("No running activities found. Run fetch_garmin.py and/or ingest "
+                 "Strava via the MCP (see CLAUDE.md).")
+    dups = len(garmin_runs) + len(strava_runs) - len(runs)
+    print(f"  · sources: {len(garmin_runs)} Garmin + {len(strava_runs)} Strava, "
+          f"{dups} dups → {len(runs)} runs")
     world = World(lang=cfg.get("lang", "pl"))
 
     # home + country
