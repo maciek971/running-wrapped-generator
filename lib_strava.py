@@ -8,6 +8,7 @@ module is pure/offline — it only reads those files. Symmetric with
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,6 +33,7 @@ def _read_one(data: dict, *, track_step: int) -> Run | None:
         id=activity_id,
         name=(data.get("name") or None),
         start_time=start_time,
+        # fallback +1 (CET) matches lib_fit._local_offset when the offset is unknown
         local_offset_h=int(data["utc_offset_h"]) if data.get("utc_offset_h") is not None else 1,
         distance_km=dist_km,
         duration_s=float(data.get("duration_s") or 0),
@@ -58,7 +60,8 @@ def load_strava(cache_dir: Path, *, track_step: int = 3) -> list[Run]:
         try:
             data = json.loads(fp.read_text())
             r = _read_one(data, track_step=track_step)
-        except Exception:
+        except Exception as exc:  # noqa: BLE001
+            print(f"  · skipping {fp.name}: {exc}", file=sys.stderr)
             continue
         if r and r.start_time:
             runs.append(r)

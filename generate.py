@@ -17,6 +17,7 @@ from statistics import median
 
 from geo import World, haversine_km
 from lib_fit import load_runs
+from lib_insights import build_briefing
 from lib_merge import merge_runs
 from lib_strava import load_strava
 
@@ -236,7 +237,11 @@ def main():
     world = World(lang=cfg.get("lang", "pl"))
 
     # home + country
-    lat0, lon0, members = detect_home(runs)
+    home_result = detect_home(runs)
+    if home_result is None:
+        sys.exit("Could not detect a home location: none of the runs have GPS data "
+                 "(e.g. treadmill-only). Need at least one outdoor run.")
+    lat0, lon0, members = home_result
     home_country, home_iso = (world.locate(lat0, lon0) or ("?", ""))
     tokens = Counter(t for r in members if (t := place_token(r.name)) and len(t) >= 3
                      and t.lower() not in _STOP and not any(c.isdigit() for c in t))
@@ -411,10 +416,14 @@ def main():
     }
 
     (HERE / "data.json").write_text(json.dumps(data, ensure_ascii=False, indent=1))
+    briefing = build_briefing(runs, data, home)   # ranked personal hooks + run titles
+    (HERE / "insights.json").write_text(json.dumps(briefing, ensure_ascii=False, indent=1))
     _inline(data)
     print(f"✓ {data['lifetime']['runs']} runs · {data['lifetime']['km']} km · "
           f"home={home_city} ({home_country}) · countries={[c['name'] for c in countries]}")
     print(f"  pins={[ (p['name'],p['count']) for p in (cmap['places'] if cmap else []) ]}")
+    print(f"  top hooks: {[i['id'] for i in briefing['insights'][:6]]}  "
+          f"({len(briefing['events'])} events, {len(briefing['notable_runs'])} notable runs)")
 
 
 def _inline(data):
