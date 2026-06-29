@@ -51,3 +51,24 @@ def test_load_strava_missing_gps_and_hr_degrades(tmp_path):
     (sdir / "t.json").write_text(json.dumps({**SAMPLE, "latlng": [], "hr": []}))
     r = load_strava(tmp_path)[0]
     assert r.start is None and r.track == [] and r.hr_samples == []
+
+
+def test_load_strava_skips_corrupt_json(tmp_path):
+    sdir = tmp_path / "strava"
+    sdir.mkdir()
+    (sdir / "bad.json").write_text("{truncated")
+    assert load_strava(tmp_path) == []
+
+
+def test_load_strava_skips_non_dict_content(tmp_path):
+    sdir = tmp_path / "strava"
+    sdir.mkdir()
+    (sdir / "arr.json").write_text(json.dumps([1, 2, 3]))
+    assert load_strava(tmp_path) == []
+
+
+def test_load_strava_preserves_utc_zero(tmp_path):
+    sdir = tmp_path / "strava"
+    sdir.mkdir()
+    (sdir / "u.json").write_text(json.dumps({**SAMPLE, "utc_offset_h": 0}))
+    assert load_strava(tmp_path)[0].local_offset_h == 0
