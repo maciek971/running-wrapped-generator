@@ -81,3 +81,21 @@ def test_predictions_present_but_no_pr_for_distance():
     five = next(r for r in b["race"] if r["key"] == "5k")
     assert five["pred"] is None
     assert all(r["key"] != "10k" for r in b["race"])
+
+
+def test_prediction_slower_than_pr_emits_faster_false():
+    rec = {"personal_records": {"5k": {"seconds": 1536}},
+           "predictions": {"5k": {"seconds": 1636}}}
+    b = build_records_block(rec_json=rec, longest=LONGEST, totals=TOTALS,
+                            peak_week=PEAK, fastest_year=FASTEST,
+                            fallback_5k=None, fallback_10k=None)
+    pred = b["race"][0]["pred"]
+    assert pred["faster"] is False
+    assert pred["delta"] == "1:40"
+    assert pred["time"] == "27:16"
+
+
+def test_sprint_pace_value():
+    b = _block()
+    one_k = next(s for s in b["sprint"] if s["key"] == "1k")
+    assert one_k["pace"] == "4:20"   # fmt_pace(259.97) rounds 19.97s -> 20
