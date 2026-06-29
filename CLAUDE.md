@@ -60,6 +60,12 @@ into `me.json` (these drive the HR zones). Safe to re-run.
   activities, save each FIT to `cache/fit/<id>.fit` and a `cache/manifest.json` of
   `{id:{fit_file,name,start_time}}`, plus birth year + resting HR — but `fetch_garmin.py`
   is faster for the bulk download, so prefer it.)*
+- `fetch_garmin.py` also pulls **official personal records** (1K, mila, 5K, 10K,
+  półmaraton, najdłuższy bieg) and **race predictions** (5K/10K/½/maraton) into
+  `cache/records.json` — these drive the redesigned "Tablica chwały" section.
+  Best-effort: if the profile/endpoint is unavailable the section falls back to
+  records derived from the FIT data. (Via a Garmin MCP: call `get_personal_record`
+  + `get_race_predictions` and write the same `cache/records.json`.)
 
 **1b. (optional) Strava — only if a Strava MCP is connected.** Use it when the
 runner has more history in Strava than Garmin, or no Garmin at all. Drive it
