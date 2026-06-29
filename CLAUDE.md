@@ -6,8 +6,8 @@ tied to a specific person or country: home city, country and the map are
 **auto-detected from the GPS data**.
 
 When the user first opens this repo and asks for their Running Wrapped, run the
-**First-run playbook** below, top to bottom. Ask the questions in steps 3, 5 and 6
-**one at a time** and wait for answers.
+**First-run playbook** below, top to bottom. The question steps (4 colours, 5 the story
+interview) are asked **one at a time** — wait for answers.
 
 ## Ground rules (do not skip)
 - **Never type the user's Garmin password yourself.** Either they have a Garmin MCP
@@ -108,19 +108,39 @@ Then recolor by editing the `:root` block at the top of `template.html`:
 Re-run `python generate.py`, open `index.html`, iterate with them until they like it.
 Keep text contrast ≥ 4.5:1.
 
-**5. Storytelling (analyse, then rewrite the copy)**
-The template ships with placeholder Polish narrative. Read `data.json` and make the
-prose **true to THIS runner**, then rewrite the chapter intros + the `.edu` callouts
-+ the outro in `template.html`. Look at and reflect:
-- the year trend (`years[]`): growing? comeback? steady? — rewrite chapter "wspinaczka".
-- busiest/most-consistent year, `records` — the outro + records framing.
-- when they run (`hours`, `weekday`): early bird / night owl / weekend warrior.
-- zone split (`zones_by_year[].pct`): polarised easy, or mostly hard?
-- travel (`scale.countries`, `poland.places`): a homebody or a tourist-runner?
-Rules: keep their language; keep the dynamic hooks (`[data-km="YEAR"]`, the
-`<span id="…">` placeholders) where live numbers appear — they auto-fill from data,
-so a future refresh won't go stale. Don't invent facts; describe what the data shows.
-Re-run `python generate.py` after editing.
+**5. Story — author mode (this is what makes it personal; don't skip)**
+Default output is *correct but generic*: the template's spine with their numbers. Your
+job here is to be the **author**, not a slot-filler. You have three inputs: `data.json`
+(the numbers), **`insights.json`** (a ranked briefing of what's *distinctive* about THIS
+runner — top hooks, race-like events, and their own run titles), and a short interview.
+
+**A. Interview (ask 3–5, one at a time, in their language; they can skip any).**
+e.g. *Dlaczego biegasz? Najmocniejsze wspomnienie biegowe z tego okresu? Cel na teraz?
+Jak się czuł ten rok (kontuzja / powrót / życiówka)? Jednym słowem — Twoje bieganie?*
+Their words carry the emotion the data can't.
+
+**B. Find the spine.** From the top `insights` + their answers, choose ONE through-line
+(not always "more km" — it might be *the 373-day comeback*, *the 5 a.m. habit*, *the first
+race*, *the year abroad*). Decide: the **title/hero line**, the **hero number**, and a
+**tone** (ask or infer: liryczny / zadziorny / rzeczowy / żartobliwy). Weave in their name.
+
+**C. Compose `template.html` around that spine — you may restructure, not just rewrite:**
+- **Reorder** chapters to serve the angle (each `<section>` has inline `style="order:N"`).
+- **Cut** chapters that say nothing for this person — hide the whole section
+  (`style="display:none"`); don't delete the inner `id` divs the JS fills.
+- **Retitle** kickers/headers; **rewrite** every `.lead`, `.edu` callout and the outro
+  around their hooks. **Quote their real run titles** from `insights.notable_runs` /
+  `events`. Reflect the interview.
+- (Optional, advanced) add a small bespoke section for a standout pattern.
+
+**D. Rules.** Keep their language. Keep the dynamic hooks (`[data-km="YEAR"]`, the
+`<span id="…">` placeholders) so numbers stay live on refresh — place new ones if you
+move numbers around. **Don't invent facts** — use only what's in `data.json`/`insights.json`
+or what they told you. Keep each chart's container `id` intact (hide the section, never
+strip the div the JS targets).
+
+**E.** Re-run `python generate.py`, open `index.html`, read it back as if you were them,
+and iterate until it feels like *their* story — then move on.
 
 **6. Preview** — open `index.html` in a browser (maps need internet — Leaflet CDN).
 Check: hero numbers, the year bars, the “gdzie” scene tabs (home / country / Świat),
@@ -140,6 +160,9 @@ glance at year rollover.
 ## Where things live
 - `template.html` — the page (theme `:root` vars + all prose). **Edit here**, not in
   `index.html` (which is generated and overwritten).
-- `generate.py` — builds `data.json` from the FIT cache + `me.json`, inlines into
-  `template.html` → `index.html`. `lib_fit.py` reads FIT, `geo.py` does country/outline.
+- `generate.py` — builds `data.json` + **`insights.json`** from the FIT cache + `me.json`,
+  inlines into `template.html` → `index.html`. `lib_fit.py` reads FIT, `lib_strava.py`/
+  `lib_merge.py` add+dedup Strava, `geo.py` does country/outline, `lib_insights.py` ranks
+  the personal hooks.
+- `insights.json` — the author briefing for step 5 (ranked hooks, events, real run titles).
 - `assets/world_countries.geo.json` — borders for country detection (offline).

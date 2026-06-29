@@ -1,6 +1,7 @@
 cache/
 me.json
 data.json
+insights.json
 index.html
 __pycache__/
 .venv/
