@@ -28,6 +28,36 @@ def _clip(x, lo=0.0, hi=1.0):
     return max(lo, min(hi, x))
 
 
+def _record_insights(rec):
+    """Insight hooks derived from the records block. Pure (no I/O) so it's
+    testable on its own. Returns a list of (id, score, note, fields) tuples.
+    The records schema carries no PR dates (Garmin's get_personal_record
+    returns date=null), so race notes omit the date."""
+    out = []
+    lg = rec.get("longest") or {}
+    if lg:
+        out.append(("longest", 0.7,
+                    f"Najdłuższy bieg: {lg.get('km')} km — „{(lg.get('name') or '').strip()}” "
+                    f"({lg.get('date')}).",
+                    {"km": lg.get("km"), "name": (lg.get("name") or "").strip(), "date": lg.get("date")}))
+    for d in rec.get("race", []):
+        note = f"Rekord {d['label']}: {d['time']} ({d['pace']}/km)"
+        pred = d.get("pred")
+        if pred:
+            sign = "−" if pred.get("faster") else "+"
+            note += f" · prognoza {pred['time']} ({sign}{pred['delta']})"
+        note += "."
+        out.append(("pr_" + d["key"], 0.45, note,
+                    {"label": d["label"], "time": d["time"], "pace": d["pace"], "pred": pred}))
+    mar = rec.get("marathon")
+    if mar:
+        out.append(("marathon_pred", 0.4,
+                    f"Garmin przewiduje, że na maraton stać Cię dziś na ~{mar['time']} — "
+                    f"a nie masz jeszcze rekordu na tym dystansie.",
+                    {"time": mar["time"]}))
+    return out
+
+
 def build_briefing(runs, data, home) -> dict:
     years = data.get("years", [])
     ins: list[dict] = []
@@ -135,23 +165,8 @@ def build_briefing(runs, data, home) -> dict:
         add("explorer", 0.5, f"{len(places)} różnych okolic w kraju poza domem.", places=len(places))
 
     # --- records ------------------------------------------------------------
-    rec = data.get("records", {})
-    lg = rec.get("longest") or {}
-    if lg:
-        add("longest", 0.7, f"Najdłuższy bieg: {lg.get('km')} km — „{(lg.get('name') or '').strip()}” "
-            f"({lg.get('date')}).", km=lg.get("km"), name=(lg.get("name") or "").strip(), date=lg.get("date"))
-    for d in rec.get("race", []):
-        msg = f"Rekord {d['label']}: {d['time']} ({d['pace']}/km)."
-        pred = d.get("pred")
-        if pred:
-            how = "szybciej" if pred.get("faster") else "wolniej"
-            msg += f" Garmin szacuje dziś {pred['time']} ({pred['delta']} {how} niż rekord)."
-        add("pr_" + d["key"], 0.45, msg, label=d["label"], time=d["time"], pace=d["pace"], pred=pred)
-    mar = rec.get("marathon")
-    if mar:
-        add("marathon_pred", 0.4,
-            f"Garmin przewiduje, że na maraton stać Cię dziś na ~{mar['time']} — a nie masz jeszcze rekordu na tym dystansie.",
-            time=mar["time"])
+    for _id, _score, _note, _nums in _record_insights(data.get("records", {})):
+        add(_id, _score, _note, **_nums)
 
     # --- events from run titles (very personal) -----------------------------
     events = []
