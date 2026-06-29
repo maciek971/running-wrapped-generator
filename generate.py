@@ -43,7 +43,7 @@ _SPRINT = [("1k", "1 km", 1.0), ("mile", "Mila", 1.609344)]
 
 
 def _fmt_time(sec):
-    sec = int(sec)
+    sec = int(sec)        # truncate, matching Garmin's own display (e.g. 1536.74s -> 25:36)
     h, rem = divmod(sec, 3600)
     m, s = divmod(rem, 60)
     return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
@@ -72,8 +72,8 @@ def build_records_block(*, rec_json, longest, totals, peak_week, fastest_year,
         else:
             fb = {"5k": fallback_5k, "10k": fallback_10k}.get(key)
             if fb:
-                race.append({"key": key, "label": label, "time": fb["time"],
-                             "pace": fb["pace"], "pred": None})
+                race.append({"key": key, "label": label, "time": fb.get("time"),
+                             "pace": fb.get("pace"), "pred": None})
 
     sprint = []
     for key, label, dist in _SPRINT:
