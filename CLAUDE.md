@@ -30,29 +30,33 @@ out setup.
    the error and fix it before continuing.)
 3. **`gh` (only needed for the optional deploy in step 7)** — check `gh auth status`;
    if absent, just note it and carry on (not needed to build the page).
-4. **Pick the Garmin data path** and tell the user which you'll use:
-   - **Look at your own connected tools for a Garmin MCP** (tool names like
-     `mcp__garmin__get_activities` / `*get_activities*`). If one is present → use the
-     **MCP path** (step 1, MCP variant). Fastest, no password.
-   - **No Garmin MCP?** That's fine — **default to the no-MCP path** (`fetch_garmin.py`,
-     step 1). It needs nothing extra beyond the deps above and the user's own login.
-     Don't block on the MCP.
-   - Only if the user *wants* an MCP (or `garminconnect` won't log in): offer to set one
-     up. Search for a current "Garmin MCP" server, show the user the exact
-     `claude mcp add …` / config change you propose, get their OK (it edits their Claude
-     config), then restart the MCP and use it. Treat this as optional, not required.
+4. **Garmin access.** All the work needs is Garmin OAuth tokens in `~/.garminconnect`
+   — once they exist, everything is passwordless. `fetch_garmin.py` (step 1) does the
+   bulk download efficiently and **reuses those tokens no matter how they got there**.
+   So:
+   - If a **Garmin MCP is already connected** (e.g. the user runs `Taxuspt/garmin_mcp`),
+     the tokens are already saved → step 1 just works, no password. Nothing to install.
+   - **No MCP, no tokens?** Don't block: step 1's `fetch_garmin.py` will ask the user's
+     Garmin login once and save the tokens itself. This is the zero-setup default.
+   - **If the user also wants the Garmin MCP** in Claude Code generally (optional — not
+     needed for this page), set up `Taxuspt/garmin_mcp` for them (it shares the same
+     `~/.garminconnect` tokens). Needs [`uv`](https://docs.astral.sh/uv/) (`brew install uv`).
+     Confirm before changing their config, then:
+     ```
+     uvx --python 3.12 --from git+https://github.com/Taxuspt/garmin_mcp garmin-mcp-auth   # user types login once
+     claude mcp add garmin -- uvx --python 3.12 --from git+https://github.com/Taxuspt/garmin_mcp garmin-mcp
+     ```
+     (the auth step alone is enough to make step 1 passwordless, even without registering the MCP.)
 
-**1. Get their Garmin data into `./cache/`**
-- If a **Garmin MCP** is connected: list the user's running activities and download
-  each one's FIT file to `cache/fit/<activityId>.fit`, and write `cache/manifest.json`
-  as `{ "<id>": {"fit_file":"<id>.fit","name":"<activity name>","start_time":"<gmt>"} }`.
-  (Names power the place labels, so include them.) Also pull the user's **birth year**
-  and **resting HR** via the MCP (`get_user_profile`/`get_userprofile_settings` and
-  `get_rhr_day`/`get_user_summary`) and write them into `me.json` as `birth_year` /
-  `resting_hr` — they drive the heart-rate zones.
-- Otherwise: `python fetch_garmin.py` — asks the user for their Garmin login (tokens
-  cached afterwards) and **auto-writes `birth_year` + `resting_hr` from their Garmin
-  profile** into `me.json`. Incremental: safe to re-run.
+**1. Get their Garmin data into `./cache/`** — run `python fetch_garmin.py`.
+It reuses `~/.garminconnect` tokens (passwordless if the user has the MCP or has logged
+in before; otherwise it asks for their Garmin login once), downloads new activities
+incrementally, and **auto-writes `birth_year` + `resting_hr` from their Garmin profile**
+into `me.json` (these drive the HR zones). Safe to re-run.
+- *(If you prefer to drive it via a connected Garmin MCP instead, you can — list running
+  activities, save each FIT to `cache/fit/<id>.fit` and a `cache/manifest.json` of
+  `{id:{fit_file,name,start_time}}`, plus birth year + resting HR — but `fetch_garmin.py`
+  is faster for the bulk download, so prefer it.)*
 
 **2. Config** — `me.json` is mostly **auto-filled from Garmin** in step 1 (birth year,
 resting HR → HR zones; max HR comes from the FIT data; zones recompute every run).
