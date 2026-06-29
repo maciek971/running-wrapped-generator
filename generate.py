@@ -38,6 +38,58 @@ def fmt_pace(sec_per_km):
     return f"{int(sec_per_km // 60)}:{int(round(sec_per_km % 60)):02d}"
 
 
+_RACE = [("5k", "5 km", 5.0), ("10k", "10 km", 10.0), ("half", "½ maraton", 21.0975)]
+_SPRINT = [("1k", "1 km", 1.0), ("mile", "Mila", 1.609344)]
+
+
+def _fmt_time(sec):
+    sec = int(sec)
+    h, rem = divmod(sec, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+
+
+def build_records_block(*, rec_json, longest, totals, peak_week, fastest_year,
+                        fallback_5k, fallback_10k):
+    """Pure: assemble data.json['records'] from Garmin records (rec_json) with
+    FIT-derived fallbacks."""
+    prs = (rec_json or {}).get("personal_records", {})
+    preds = (rec_json or {}).get("predictions", {})
+
+    race = []
+    for key, label, dist in _RACE:
+        pr = prs.get(key)
+        if pr:
+            sec = pr["seconds"]
+            time, pace = _fmt_time(sec), fmt_pace(sec / dist)
+            pred = None
+            p = preds.get(key)
+            if p:
+                delta = sec - p["seconds"]
+                pred = {"time": _fmt_time(p["seconds"]),
+                        "delta": _fmt_time(abs(delta)), "faster": delta > 0}
+            race.append({"key": key, "label": label, "time": time, "pace": pace, "pred": pred})
+        else:
+            fb = {"5k": fallback_5k, "10k": fallback_10k}.get(key)
+            if fb:
+                race.append({"key": key, "label": label, "time": fb["time"],
+                             "pace": fb["pace"], "pred": None})
+
+    sprint = []
+    for key, label, dist in _SPRINT:
+        pr = prs.get(key)
+        if pr:
+            sprint.append({"key": key, "label": label, "time": _fmt_time(pr["seconds"]),
+                           "pace": fmt_pace(pr["seconds"] / dist)})
+
+    marathon = None
+    if preds.get("marathon"):
+        marathon = {"time": _fmt_time(preds["marathon"]["seconds"])}
+
+    return {"longest": longest, "race": race, "sprint": sprint, "marathon": marathon,
+            "totals": totals, "peak_week": peak_week, "fastest_year": fastest_year}
+
+
 def iso_week(d: date) -> str:
     y, w, _ = d.isocalendar()
     return f"{y}-W{w:02d}"
