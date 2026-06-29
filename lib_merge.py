@@ -27,7 +27,7 @@ def merge_runs(garmin: list[Run], strava: list[Run]) -> list[Run]:
     a GPS track; if Garmin lacks a track but Strava has one, keep Strava."""
     merged = list(garmin)
     for s in strava:
-        match = next((g for g in merged if _same_run(g, s)), None)
+        match = next((g for g in garmin if _same_run(g, s)), None)   # match only against Garmin
         if match is None:
             merged.append(s)
         elif not match.track and s.track:

@@ -62,3 +62,26 @@ def test_result_sorted_by_time():
     s = mk("s1", "strava", mins=0, dist=5.0)
     out = merge_runs([g], [s])
     assert [r.id for r in out] == ["s1", "g1"]
+
+
+def test_strava_only_runs_are_not_deduped_against_each_other():
+    s1 = mk("s1", "strava", mins=0, dist=8.0)
+    s2 = mk("s2", "strava", mins=3, dist=8.0)   # within window of s1, but no garmin involved
+    assert len(merge_runs([], [s1, s2])) == 2
+
+
+def test_two_garmin_match_one_strava_both_preserved():
+    g1 = mk("g1", "garmin", mins=0, dist=8.0)
+    g2 = mk("g2", "garmin", mins=3, dist=8.0)
+    s1 = mk("s1", "strava", mins=2, dist=8.0)   # matches both garmin runs
+    out = merge_runs([g1, g2], [s1])
+    assert len(out) == 2
+    assert {r.id for r in out} == {"g1", "g2"}
+
+
+def test_both_lack_track_keeps_garmin():
+    g = mk("g1", "garmin", mins=0, dist=8.0, track=False)
+    s = mk("s1", "strava", mins=2, dist=8.0, track=False)
+    out = merge_runs([g], [s])
+    assert len(out) == 1
+    assert out[0].source == "garmin"
