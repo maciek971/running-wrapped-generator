@@ -291,14 +291,18 @@
   .scalebox .r b{font-family:'Anton';color:var(--cream);font-weight:400}
 
   /* generic mini bars (weekday / hours / distance) */
-  .bars{display:flex;align-items:flex-end;gap:5px;height:210px;margin-top:30px}
-  .bars .b{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}
-  .bars .b .f{width:100%;height:0;border-radius:5px 5px 0 0;background:var(--grad);opacity:.48;
+  .bars{display:flex;align-items:flex-end;gap:5px;height:210px;margin-top:30px;margin-bottom:30px}
+  .bars .b{flex:1;height:100%;position:relative;display:flex;flex-direction:column;justify-content:flex-end}
+  /* only .f is in normal flow, so its % height resolves exactly; the labels are
+     absolute — otherwise flexbox shrinks every bar to the same residual height */
+  .bars .b .f{position:relative;width:100%;height:0;border-radius:5px 5px 0 0;background:var(--grad);opacity:.48;
     transition:height .9s cubic-bezier(.2,.8,.2,1)}
   .bars .b.hot .f{opacity:1;box-shadow:0 0 18px rgba(255,94,91,.4)}
-  .bars .b .bv{font-family:'Anton';font-size:12px;opacity:0;transition:opacity .4s .4s}
+  .bars .b .bv{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;
+    font-family:'Anton';font-size:12px;opacity:0;transition:opacity .4s .4s;white-space:nowrap}
   .in .bars .b .bv{opacity:.85}
-  .bars .b .bl{font-size:11px;color:var(--muted);white-space:nowrap}
+  .bars .b .bl{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:7px;
+    font-size:11px;color:var(--muted);white-space:nowrap}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:40px}
   @media(max-width:720px){.two{grid-template-columns:1fr;gap:30px}}
   .subh{font-family:'Anton';font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--cream);margin-bottom:2px}
@@ -754,8 +758,8 @@ function simpleBars(sel,items,getVal,getLabel,hotFn){
   items.forEach((it,i)=>{
     const v=getVal(it); const b=document.createElement('div');
     b.className='b'+(hotFn&&hotFn(it,i)?' hot':'');
-    b.innerHTML=`<div class="bv">${v||''}</div><div class="f"></div><div class="bl">${getLabel(it,i)}</div>`;
-    b.title=`${getLabel(it,i)}: ${v}`; wrap.appendChild(b); b._h=v/max*100;
+    b.innerHTML=`<div class="f"><span class="bv">${v||''}</span></div><div class="bl">${getLabel(it,i)}</div>`;
+    b.title=`${getLabel(it,i)}: ${v}`; wrap.appendChild(b); b._h=v/max*92;  // cap 92% → headroom for the value label
   });
   obsBars(wrap);
 }
