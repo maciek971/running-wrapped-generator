@@ -31,6 +31,7 @@ class Run:
     start: tuple[float, float] | None   # (lat, lon) of first GPS fix
     track: list[tuple[float, float]] = field(default_factory=list)
     hr_samples: list[int] = field(default_factory=list)  # per-record HR, for zone time
+    source: str = "garmin"        # "garmin" | "strava" — for dedup preference + reporting
 
 
 def _local_offset(msgs) -> int:
