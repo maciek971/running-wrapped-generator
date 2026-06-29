@@ -18,6 +18,8 @@ import sys
 import zipfile
 from pathlib import Path
 
+from garmin_records import normalize_records
+
 HERE = Path(__file__).resolve().parent
 CACHE = Path(os.getenv("WRAPPED_CACHE") or (HERE / "cache"))
 TOKENS = os.path.expanduser("~/.garminconnect")
@@ -112,6 +114,24 @@ def _merge_me_json(found: dict):
     return cfg
 
 
+def _save_records(g):
+    """Best-effort: pull official PRs + race predictions into cache/records.json.
+    A failure here must never block the activity download."""
+    try:
+        prs = g.get_personal_record()
+    except Exception:
+        prs = None
+    try:
+        preds = g.get_race_predictions()
+    except Exception:
+        preds = None
+    rec = normalize_records(prs, preds)
+    if rec["personal_records"] or rec["predictions"]:
+        (CACHE / "records.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1))
+        print(f"  · Garmin records → {len(rec['personal_records'])} PR, "
+              f"{len(rec['predictions'])} predictions")
+
+
 def main():
     from garminconnect import Garmin
 
@@ -122,6 +142,7 @@ def main():
 
     g = _login()
     _merge_me_json(profile_defaults(g))   # birth year + resting HR for HR zones
+    _save_records(g)                      # official PRs + race predictions
 
     summaries, start = [], 0
     while True:
