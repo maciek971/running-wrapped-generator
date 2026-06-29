@@ -1,0 +1,6 @@
+cache/
+me.json
+data.json
+index.html
+__pycache__/
+.venv/

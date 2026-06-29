@@ -1,0 +1,2 @@
+garminconnect>=0.2.20
+garmin-fit-sdk>=21.141

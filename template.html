@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Running Wrapped · 2014–2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Hanken+Grotesk:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --ink:#0b0b0f; --ink2:#15151d; --line:#26262f;
+    --cream:#f5efe6; --muted:#8c8c9c;
+    --a1:#FFB037; --a2:#FF5E5B; --a3:#D7376B;
+    --z1:#3E92CC; --z2:#2BAA7F; --z3:#F2C94C; --z4:#F2994A; --z5:#E5484D;
+    --grad:linear-gradient(100deg,var(--a1),var(--a2) 55%,var(--a3));
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink); color:var(--cream);
+    font-family:'Hanken Grotesk',system-ui,sans-serif; line-height:1.5;
+    overflow-x:hidden;
+  }
+  /* grain + glow atmosphere */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .glow{position:fixed;border-radius:50%;filter:blur(120px);opacity:.22;z-index:0;pointer-events:none}
+  .glow.g1{width:560px;height:560px;background:var(--a2);top:-160px;right:-120px}
+  .glow.g2{width:480px;height:480px;background:var(--a3);bottom:10%;left:-160px;opacity:.16}
+
+  main{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:0 24px;
+    display:flex;flex-direction:column}
+  section{padding:13vh 0;border-bottom:1px solid var(--line)}
+  section:last-child{border-bottom:0}
+
+  .kicker{font-family:'Anton';letter-spacing:.22em;text-transform:uppercase;font-size:13px;
+    color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text;margin-bottom:18px}
+  h2{font-family:'Anton';font-weight:400;font-size:clamp(34px,6vw,68px);line-height:.98;
+    text-transform:uppercase;letter-spacing:.01em;margin-bottom:10px}
+  .lead{color:var(--muted);font-size:clamp(15px,1.8vw,19px);max-width:60ch}
+  .lead b{color:var(--cream);font-weight:600}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .rv.in{opacity:1;transform:none}
+  .rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}.rv.d4{transition-delay:.32s}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;border-bottom:1px solid var(--line)}
+  .hero .kicker{font-size:15px}
+  .bignum{font-family:'Anton';font-weight:400;font-size:clamp(96px,26vw,300px);line-height:.82;
+    color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text;
+    letter-spacing:-.01em}
+  .bignum .unit{font-size:.28em;-webkit-text-fill-color:var(--cream);color:var(--cream);margin-left:.1em}
+  .substats{display:flex;flex-wrap:wrap;gap:34px;margin-top:34px}
+  .substats .s .n{font-family:'Anton';font-size:clamp(26px,4vw,42px);line-height:1}
+  .substats .s .l{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+  .scrollcue{margin-top:54px;color:var(--muted);font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    display:flex;align-items:center;gap:10px}
+  .scrollcue::before{content:"";width:34px;height:1px;background:var(--muted)}
+
+  /* charts */
+  .chart{width:100%;margin-top:34px}
+  .bar-row{display:flex;align-items:flex-end;gap:clamp(4px,1vw,12px);height:300px;margin-bottom:46px}
+  /* only .fill is in normal flow, so its % height is exact (labels are absolute,
+     otherwise flexbox shrinks tall bars and 704/799 collapse to the same height) */
+  .bar{flex:1;height:100%;position:relative;display:flex;flex-direction:column;justify-content:flex-end}
+  .bar .fill{position:relative;width:100%;border-radius:6px 6px 0 0;height:0;
+    transition:height 1s cubic-bezier(.2,.8,.2,1);background:var(--grad);opacity:.42}
+  .bar.hot .fill{opacity:1;box-shadow:0 0 22px rgba(255,94,91,.35)}
+  .bar .v{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:7px;
+    font-family:'Anton';font-size:13px;opacity:0;transition:opacity .5s .4s;white-space:nowrap}
+  .bar .yr{position:absolute;top:100%;left:50%;transform:translateX(-50%) rotate(180deg);margin-top:9px;
+    color:var(--muted);font-size:11px;writing-mode:vertical-rl}
+  .bar:hover .fill{filter:brightness(1.15)}
+  .in .bar .v{opacity:.9}
+
+  .stack-row{display:flex;align-items:flex-end;gap:clamp(4px,1vw,12px);height:260px}
+  .stack{flex:1;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden;
+    height:0;transition:height 1s cubic-bezier(.2,.8,.2,1)}
+  .seg{width:100%}
+  .stack-lbl{display:flex;gap:clamp(4px,1vw,12px);margin-top:8px}
+  .stack-lbl .yr{flex:1;text-align:center;color:var(--muted);font-size:11px}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:18px;font-size:13px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+  .area-wrap{position:relative;margin-top:30px}
+  svg{display:block;width:100%;overflow:visible}
+  .area-path{opacity:0;transition:opacity 1.1s ease}
+  .in .area-path{opacity:1}
+  .line-path{stroke-dasharray:2600;stroke-dashoffset:2600;transition:stroke-dashoffset 1.6s ease}
+  .in .line-path{stroke-dashoffset:0}
+
+  /* records */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:34px}
+  .card{background:var(--ink2);border:1px solid var(--line);border-radius:18px;padding:24px;position:relative;overflow:hidden}
+  .card::after{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--grad)}
+  .card .big{font-family:'Anton';font-size:clamp(30px,4vw,46px);line-height:1;margin:4px 0 6px}
+  .card .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.14em}
+  .card .sub{font-size:14px;color:var(--cream);opacity:.7;margin-top:4px}
+
+  /* "gdzie" — one zoom-out stage; a prominent tab bar switches Wrocław/Polska/Świat */
+  .scene{margin-top:30px}
+  .scene-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;
+    flex-wrap:wrap;margin-bottom:20px}
+  .tabwrap{display:flex;flex-direction:column;gap:9px;min-width:0}
+  .scene-hint{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--a1)}
+  .scene-hint .pts{font-size:14px}
+  /* the segmented control — each tab reads as a real button (bg+border), active = gradient */
+  .lvltabs{display:inline-flex;background:var(--ink);border:1px solid var(--line);
+    border-radius:999px;padding:5px;gap:5px;width:max-content;max-width:100%}
+  .lvltab{appearance:none;-webkit-appearance:none;cursor:pointer;border:1px solid var(--line);
+    background:rgba(255,255,255,.05);color:var(--cream);font-family:'Hanken Grotesk',sans-serif;
+    font-size:15px;font-weight:600;padding:11px 20px;border-radius:999px;display:flex;align-items:center;
+    gap:8px;white-space:nowrap;touch-action:manipulation;
+    transition:background .2s ease,color .2s ease,transform .12s ease,box-shadow .2s ease}
+  .lvltab .e{font-size:17px;line-height:1}
+  .lvltab:hover{background:rgba(255,255,255,.12)}
+  .lvltab:active{transform:scale(.95)}
+  .lvltab:focus-visible{outline:2px solid var(--a1);outline-offset:3px}
+  .lvltab.on{color:#1a0f0a;background:var(--grad);border-color:transparent;
+    box-shadow:0 6px 20px rgba(255,94,91,.4)}
+  .lvltab.on .e{filter:saturate(1.1)}
+  /* one-time pulse on reveal so it's obvious the bar is interactive */
+  @keyframes tabhint{0%,100%{box-shadow:0 0 0 0 rgba(255,176,55,0)}
+    50%{box-shadow:0 0 0 5px rgba(255,176,55,.22)}}
+  .scene.in .lvltabs{animation:tabhint 1.5s ease .3s 2}
+  .scope{display:flex;align-items:center;gap:11px;flex-shrink:0}
+  .bullseye{width:42px;height:42px;flex-shrink:0}
+  .bullseye .r{fill:none;stroke:var(--line);stroke-width:2.4;opacity:.5;transition:stroke .3s,opacity .3s}
+  .bullseye.l0 .r0,.bullseye.l1 .r1,.bullseye.l2 .r2{stroke:var(--a2);opacity:1}
+  .scope-stat{line-height:1.06;text-align:right}
+  .scope-stat b{font-family:'Anton';font-size:26px;display:block;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .scope-stat span{font-size:12px;color:var(--muted)}
+  /* the stage: one frame, levels cross-fade + scale (zoom feel), height animates */
+  .stage2{position:relative;transition:height .42s cubic-bezier(.2,.8,.2,1)}
+  .lvl{position:absolute;inset:0 0 auto 0;width:100%;opacity:0;visibility:hidden;transform:scale(1.05);
+    transition:opacity .4s ease,transform .42s cubic-bezier(.2,.8,.2,1)}
+  .lvl.on{opacity:1;visibility:visible;transform:none}
+  /* level 1 — Wrocław home card */
+  .homecard{background:var(--ink2);border:1px solid var(--line);border-radius:18px;
+    padding:26px 28px;position:relative;overflow:hidden}
+  .homecard::after{content:'';position:absolute;right:-50px;top:-50px;width:240px;height:240px;
+    background:radial-gradient(circle,rgba(255,176,55,.16),transparent 70%);pointer-events:none}
+  .homecard .hbig{font-family:'Anton';font-size:clamp(28px,4.6vw,44px);line-height:1.05;max-width:20ch}
+  /* level 2 — Poland pin map */
+  .plmap{position:relative;max-width:560px;margin:0 auto}
+  .plmap svg{width:100%;height:auto;display:block;overflow:visible}
+  .pl-outline{fill:rgba(255,255,255,.045);stroke:rgba(245,239,230,.5);stroke-width:2.2;stroke-linejoin:round}
+  .pin .halo{fill:rgba(255,94,91,.16)}
+  .pin .emo{dominant-baseline:central;text-anchor:middle}
+  .pin .leader{stroke:rgba(245,239,230,.32);stroke-width:1.2}
+  .pin .plbl{dominant-baseline:central;paint-order:stroke;stroke:var(--ink);stroke-width:4.5;
+    stroke-linejoin:round}
+  .pin .ln{font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:26px;fill:var(--cream)}
+  .pin .lc{font-family:'Anton';font-size:26px;fill:var(--a1)}
+  .plhome{filter:drop-shadow(0 0 9px rgba(255,176,55,.75))}
+  /* level 3 — world chips */
+  .countries{justify-content:flex-start}
+  @media(prefers-reduced-motion:reduce){.stage2,.lvl{transition:none}.scene.in .lvltabs{animation:none}}
+  @media(max-width:560px){
+    .scene-bar{gap:14px}
+    .lvltabs{width:100%;justify-content:space-between}
+    .lvltab{flex:1;justify-content:center;padding:12px 6px;font-size:13px;gap:5px}
+    .lvltab .e{font-size:15px}
+    .scope{width:100%;justify-content:flex-start}
+  }
+
+  /* route-art map carousel */
+  .carousel{position:relative;margin-top:32px}
+  .stage{position:relative}  /* wraps slides+controls so buttons centre on the MAP, not the dots */
+  /* slides are STACKED (absolute), not horizontally scrolled — a scroll
+     container desyncs Leaflet's route overlay from the tiles. */
+  .slides{position:relative;aspect-ratio:16/10;border:1px solid var(--line);
+    border-radius:20px;overflow:hidden;background:#0c0c11;touch-action:pan-y}
+  .slides:focus-visible{outline:2px solid var(--a1);outline-offset:3px}
+  .slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .4s ease}
+  .slide.active{opacity:1;visibility:visible}
+  .slide .lmap{position:absolute;inset:0;background:#0c0c11}
+  .slide .lmap .leaflet-tile{filter:saturate(.6) brightness(.92)}
+  /* route lines drawn on the Leaflet overlay get a warm glow + draw animation */
+  .slide path.route{fill:none;stroke:#FF7A45;stroke-linejoin:round;stroke-linecap:round;
+    filter:drop-shadow(0 0 3px rgba(255,94,91,.7))}
+  .slide path.route.draw{transition:stroke-dashoffset 1.6s ease;stroke-dashoffset:0!important}
+  .slide .cap{position:absolute;left:20px;bottom:16px;right:20px;z-index:500;pointer-events:none;
+    text-shadow:0 2px 14px #000,0 0 30px #000}
+  .slide .cap .t{font-family:'Anton';font-size:clamp(20px,3.4vw,30px);line-height:1}
+  .slide .cap .s{color:var(--cream);opacity:.85;font-size:14px;margin-top:3px}
+  .slide .grad{position:absolute;inset:0;z-index:400;pointer-events:none;
+    background:linear-gradient(0deg,rgba(8,8,12,.85),rgba(8,8,12,0) 45%)}
+  .leaflet-control-attribution{display:none}
+  /* nav arrows — high-contrast pills that lift off the dark map */
+  .cbtn{position:absolute;top:50%;transform:translateY(-50%);z-index:600;cursor:pointer;
+    width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;border:1.5px solid rgba(255,255,255,.55);color:#fff;
+    background:rgba(10,10,16,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    box-shadow:0 6px 20px rgba(0,0,0,.55);touch-action:manipulation;
+    transition:background .2s ease,border-color .2s ease,transform .12s ease}
+  .cbtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;
+    stroke-linecap:round;stroke-linejoin:round}
+  .cbtn:hover{background:var(--a2);border-color:#fff}
+  .cbtn:active{transform:translateY(-50%) scale(.9)}
+  .cbtn:focus-visible{outline:2px solid var(--a1);outline-offset:3px}
+  .cbtn.prev{left:14px}.cbtn.next{right:14px}
+  /* position counter — "3 / 7" pill, top-right */
+  .counter{position:absolute;top:12px;right:12px;z-index:600;pointer-events:none;
+    font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;letter-spacing:.04em;
+    color:#fff;background:rgba(10,10,16,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.5)}
+  .counter b{color:var(--a1)}
+  /* dot indicator — visible, with 44px-tall tap areas */
+  .dots{display:flex;gap:6px;justify-content:center;align-items:center;
+    margin-top:14px;flex-wrap:wrap}
+  .dots button{appearance:none;-webkit-appearance:none;border:0;background:transparent;
+    cursor:pointer;padding:12px 6px;line-height:0;touch-action:manipulation}
+  .dots button i{display:block;width:9px;height:9px;border-radius:50%;
+    background:rgba(245,239,230,.34);transition:all .3s ease}
+  .dots button:hover i{background:rgba(245,239,230,.65)}
+  .dots button.on i{background:var(--a2);width:26px;border-radius:5px}
+  .dots button:focus-visible{outline:2px solid var(--a1);outline-offset:2px;border-radius:10px}
+  @media(max-width:560px){
+    .slides{aspect-ratio:1/1}        /* taller map on portrait phones */
+    .cbtn{width:44px;height:44px}
+    .cbtn.prev{left:10px}.cbtn.next{right:10px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .slide{transition:none}
+    .cbtn,.dots button i{transition:none}
+  }
+
+  /* country chips */
+  .countries{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+  .country{display:flex;align-items:center;gap:10px;background:var(--ink2);border:1px solid var(--line);
+    border-radius:14px;padding:12px 16px}
+  .country.foreign{border-color:rgba(255,176,55,.5);box-shadow:0 0 20px rgba(255,176,55,.12)}
+  .country .fl{font-size:24px}
+  .country .nm{font-weight:600}
+  .country .rn{font-family:'Anton';color:var(--muted);font-size:13px}
+
+  /* hour radar chart */
+  .hourchart{margin-top:24px;display:flex;justify-content:center}
+  .hourchart svg{width:100%;max-width:340px;height:auto;display:block}
+
+  /* scale / perspective boxes */
+  .scalebox{background:var(--ink2);border:1px solid var(--line);border-radius:20px;padding:28px;
+    position:relative;overflow:hidden}
+  .scalebox::after{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--grad)}
+  .scalebox .huge{font-family:'Anton';font-size:clamp(42px,7vw,76px);line-height:.88;margin:6px 0 4px;
+    color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+  .scalebox .cmp{font-size:16px;color:var(--cream);line-height:1.4}
+  .scalebox .cmp b{color:var(--a1)}
+  .scalebox .rows{margin-top:18px;display:flex;flex-direction:column}
+  .scalebox .r{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);
+    border-top:1px solid var(--line);padding:7px 0}
+  .scalebox .r b{font-family:'Anton';color:var(--cream);font-weight:400}
+
+  /* generic mini bars (weekday / hours / distance) */
+  .bars{display:flex;align-items:flex-end;gap:5px;height:210px;margin-top:30px}
+  .bars .b{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}
+  .bars .b .f{width:100%;height:0;border-radius:5px 5px 0 0;background:var(--grad);opacity:.48;
+    transition:height .9s cubic-bezier(.2,.8,.2,1)}
+  .bars .b.hot .f{opacity:1;box-shadow:0 0 18px rgba(255,94,91,.4)}
+  .bars .b .bv{font-family:'Anton';font-size:12px;opacity:0;transition:opacity .4s .4s}
+  .in .bars .b .bv{opacity:.85}
+  .bars .b .bl{font-size:11px;color:var(--muted);white-space:nowrap}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+  @media(max-width:720px){.two{grid-template-columns:1fr;gap:30px}}
+  .subh{font-family:'Anton';font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--cream);margin-bottom:2px}
+
+  /* moon cards + zodiac */
+  .moons{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
+  @media(max-width:640px){.moons{grid-template-columns:repeat(2,1fr)}}
+  .moon{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center}
+  .moon.best{border-color:var(--a1);box-shadow:0 0 26px rgba(255,176,55,.18)}
+  .moon .ph{font-size:30px}.moon .nm{font-size:13px;color:var(--muted);margin:6px 0 10px}
+  .moon .pc{font-family:'Anton';font-size:26px}.moon .rn{font-size:12px;color:var(--muted)}
+  .zod{margin-top:26px;display:flex;flex-direction:column;gap:9px}
+  .zrow{display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:14px}
+  .zrow.king .zn{color:var(--a1)}
+  .zrow .zn{font-weight:600}.zrow .ztrack{height:12px;background:var(--ink2);border-radius:6px;overflow:hidden}
+  .zrow .zf{height:100%;width:0;background:var(--grad);border-radius:6px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+  .zrow .zp{font-family:'Anton';font-size:13px;text-align:right;color:var(--muted)}
+  .disclaim{color:var(--muted);font-size:13px;font-style:italic;margin-top:8px;opacity:.8}
+
+  /* educational annotation */
+  .edu{margin-top:26px;border-left:2px solid;border-image:var(--grad) 1;padding:8px 0 8px 18px;
+    color:var(--muted);font-size:14.5px;max-width:62ch}
+  .edu b{color:var(--a1);font-weight:600}
+
+  .outro h2{font-size:clamp(40px,9vw,110px)}
+  .outro .lead{font-size:clamp(17px,2.4vw,24px);margin-top:14px}
+  footer{padding:40px 0 70px;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+  a{color:var(--a1);text-decoration:none;border-bottom:1px solid rgba(255,176,55,.4)}
+  @media(max-width:640px){.bar .yr{font-size:9px}.reg{grid-template-columns:74px 1fr 44px}}
+</style>
+</head>
+<body>
+<div class="glow g1"></div><div class="glow g2"></div>
+<main>
+
+  <!-- HERO -->
+  <section class="hero" style="order:0">
+    <div class="kicker rv">Running Wrapped · 2014 — 2026</div>
+    <div class="bignum rv d1"><span id="km">0</span><span class="unit">km</span></div>
+    <div class="substats">
+      <div class="s rv d2"><div class="n" id="runs">0</div><div class="l">biegów</div></div>
+      <div class="s rv d2"><div class="n" id="hours">0</div><div class="l">godzin w nogach</div></div>
+      <div class="s rv d3"><div class="n" id="years">0</div><div class="l">lat na trasie</div></div>
+      <div class="s rv d3"><div class="n"><span id="earth">0</span>%</div><div class="l">obwodu Ziemi</div></div>
+    </div>
+    <div class="scrollcue rv d4">przewiń, żeby zobaczyć historię</div>
+  </section>
+
+  <!-- VOLUME BY YEAR -->
+  <section id="climb" style="order:1">
+    <div class="kicker rv">Rozdział 1 — wspinaczka</div>
+    <h2 class="rv">Rok po roku,<br>kilometr po kilometrze</h2>
+    <p class="lead rv d1">Zaczęło się w <b>2014</b> od <span data-km="2014">217</span> km. Dwanaście lat później rok <b>2026</b> ma już
+      <b><span data-km="2026">856</span> km</b> — i to dopiero <span id="c-when">koniec czerwca</span>. Pomiędzy: lata słabsze i mocniejsze, ale trend jest jeden.</p>
+    <div class="chart bar-row" id="yearBars"></div>
+    <div class="edu rv">📈 <b>Konsekwencja się kumuluje.</b> Nie chodzi o jeden genialny tydzień — sumę robią
+      lata powtarzalności. Skok 2024→2026 (<span data-km="2024">390</span> → <span data-km="2025">704</span> → <span data-km="2026">856</span> km) to efekt regularności, nie cudu.</div>
+  </section>
+
+  <!-- MONTHLY AREA -->
+  <section id="explosion" style="order:2">
+    <div class="kicker rv">Rozdział 2 — eksplozja</div>
+    <h2 class="rv">88 miesięcy biegania</h2>
+    <p class="lead rv d1">Każdy słupek to miesiąc. Pierwsze 9 lat to fale przypływów i odpływów.
+      Od <b>2024</b> krzywa przestaje opadać — miesięczny wolumen rośnie z ~40 km do
+      <b>ponad 170 km</b> w szczycie.</p>
+    <div class="area-wrap rv"><svg id="monthArea" viewBox="0 0 1000 280" preserveAspectRatio="none"></svg></div>
+    <div class="edu rv">🌊 <b>Od „czasem biegam" do „jestem biegaczem".</b> Przełom to nie pojedynczy
+      trening, tylko moment, w którym wykres przestał wracać do zera.</div>
+  </section>
+
+  <!-- ZONES -->
+  <section id="zones" style="order:7">
+    <div class="kicker rv">Rozdział 7 — jak trenujesz</div>
+    <h2 class="rv">Nauka biegania<br>na luzie</h2>
+    <p class="lead rv d1">Rozkład czasu w strefach tętna, rok po roku (od 2018, odkąd jest HR).
+      Przez lata dominowała <b>Z4 — mocno</b>. W <b>2026</b> wszystko się przewraca:
+      <b><span id="z-easy">56</span>% czasu w Z1+Z2</b>, czyli spokojnie.</p>
+    <div class="chart stack-row" id="zoneStack"></div>
+    <div class="stack-lbl" id="zoneYears"></div>
+    <div class="legend" id="zoneLegend"></div>
+    <div class="edu rv">❤️ <b>Trening spolaryzowany.</b> Większość kilometrów wolno (Z1/Z2), tylko
+      odrobina naprawdę mocno (Z4/Z5). Buduje bazę tlenową bez ciągłego zmęczenia — i właśnie
+      dlatego w 2026 biegasz <b>dwa razy więcej</b> przy <b>niższym średnim tętnie</b>.</div>
+  </section>
+
+  <!-- PACE VS VOLUME -->
+  <section id="speed" style="order:8">
+    <div class="kicker rv">Rozdział 8 — tempo kontra wolumen</div>
+    <h2 class="rv">Szybciej nie znaczy więcej</h2>
+    <p class="lead rv d1">Linia to średnie tempo w danym roku, słupki w tle — wolumen.
+      Najszybszy byłeś w <b>2017 (5:45/km)</b> przy <span data-km="2017">238</span> km. Dziś biegasz <b><span id="p-mult">3</span>× więcej</b>,
+      wolniej średnio — bo większość to spokojne kilometry.</p>
+    <div class="area-wrap rv"><svg id="paceChart" viewBox="0 0 1000 300"></svg></div>
+    <div class="edu rv">🐢 <b>Wolne kilometry to nie strata.</b> Średnie tempo spada, gdy świadomie
+      biegasz łatwo — a to ono buduje wytrzymałość pod te szybkie dni.</div>
+  </section>
+
+  <!-- WHERE -->
+  <section id="where" style="order:5">
+    <div class="kicker rv">Rozdział 5 — gdzie</div>
+    <h2 class="rv">Twoje terytorium</h2>
+    <p class="lead rv d1">Zacznij na własnej ulicy i odjeżdżaj kamerą — aż w kadrze zmieści się pół świata.</p>
+
+    <div class="scene rv d1">
+      <div class="scene-bar">
+        <div class="tabwrap">
+          <span class="scene-hint"><span class="pts">↔</span> oddalaj kamerę</span>
+          <div class="lvltabs" role="tablist" aria-label="Poziom mapy — skala widoku" tabindex="0">
+            <button class="lvltab on" data-lvl="0" role="tab" aria-selected="true"><span class="e">🏠</span><span id="tab-home">Dom</span></button>
+            <button class="lvltab" data-lvl="1" role="tab" aria-selected="false"><span class="e" id="tab-flag">🇵🇱</span><span id="tab-country">Polska</span></button>
+            <button class="lvltab" data-lvl="2" role="tab" aria-selected="false"><span class="e">🌍</span>Świat</button>
+          </div>
+        </div>
+        <div class="scope">
+          <svg class="bullseye l0" viewBox="0 0 44 44" aria-hidden="true">
+            <circle class="r r2" cx="22" cy="22" r="20"/>
+            <circle class="r r1" cx="22" cy="22" r="13"/>
+            <circle class="r r0" cx="22" cy="22" r="6"/>
+          </svg>
+          <div class="scope-stat"><b id="sceneStat">—</b><span id="sceneSub"></span></div>
+        </div>
+      </div>
+      <div class="stage2" id="sceneStage">
+        <div class="lvl on" data-lvl="0" role="tabpanel"><div class="homecard" id="homeCard"></div></div>
+        <div class="lvl" data-lvl="1" role="tabpanel"><div class="plmap" id="plMap"></div></div>
+        <div class="lvl" data-lvl="2" role="tabpanel"><div class="countries" id="countries"></div></div>
+      </div>
+    </div>
+
+    <p class="lead rv" style="margin-top:48px">A teraz zejdźmy na poziom ulicy — każda z tych tras
+      narysowana Twoim własnym GPS-em.</p>
+    <div class="carousel">
+      <div class="stage">
+        <div class="slides" id="mapSlides" tabindex="0" role="group"
+             aria-roledescription="karuzela map" aria-label="Mapy Twoich tras — strzałki ← → przełączają"></div>
+        <button class="cbtn prev" id="mapPrev" type="button" aria-label="Poprzednia mapa">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="cbtn next" id="mapNext" type="button" aria-label="Następna mapa">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <div class="counter" id="mapCounter" aria-hidden="true"></div>
+      </div>
+      <div class="dots" id="mapDots" role="tablist" aria-label="Wybór mapy"></div>
+    </div>
+  </section>
+
+  <!-- SCALE -->
+  <section id="scale" style="order:6">
+    <div class="kicker rv">Rozdział 6 — w skali</div>
+    <h2 class="rv">Co to właściwie<br>znaczy?</h2>
+    <p class="lead rv d1">Liczby robią wrażenie dopiero w porównaniu. Więc proszę. 🧭</p>
+    <div class="two" style="margin-top:36px">
+      <div class="scalebox rv d1" id="scaleElev"></div>
+      <div class="scalebox rv d2" id="scaleDist"></div>
+    </div>
+  </section>
+
+  <!-- WHEN -->
+  <section id="when" style="order:3">
+    <div class="kicker rv">Rozdział 3 — kiedy</div>
+    <h2 class="rv">Biegacz świtu</h2>
+    <p class="lead rv d1">Godzina startu (czas lokalny), zsumowana przez 12 lat. Werdykt jest bezlitosny:
+      szczyt o <b>5:00 rano</b>, tuż za nim 6:00. Wieczory praktycznie nie istnieją.</p>
+    <div class="two">
+      <div class="rv d1"><div class="subh">Pora dnia (radar 24h — długość = liczba biegów)</div>
+        <div class="hourchart" id="hourChart"></div></div>
+      <div class="rv d2"><div class="subh">Dzień tygodnia</div>
+        <div class="bars" id="wdBars"></div></div>
+    </div>
+    <div class="edu rv">🌅 <b>Zegar biologiczny biegacza.</b> 84% Twoich startów pada między
+      5:00 a 8:00 — to nie przypadek, to nawyk. Trening przed światem.</div>
+  </section>
+
+  <!-- DISTANCE -->
+  <section id="dist" style="order:4">
+    <div class="kicker rv">Rozdział 4 — dystans</div>
+    <h2 class="rv">Twój ulubiony<br>dystans</h2>
+    <p class="lead rv d1">Rozkład długości wszystkich biegów. Serce tkwi w przedziale
+      <b>5–7 km</b> — solidna „codzienna" dawka. Ale ogon w stronę 15+ km rośnie.</p>
+    <div class="bars" id="distBars"></div>
+  </section>
+
+  <!-- RECORDS -->
+  <section id="records" style="order:9">
+    <div class="kicker rv">Rozdział 9 — rekordy</div>
+    <h2 class="rv">Tablica chwały</h2>
+    <div class="grid" id="records"></div>
+  </section>
+
+  <!-- FUN -->
+  <section id="fun" style="order:10">
+    <div class="kicker rv">Rozdział 10 — z przymrużeniem oka</div>
+    <h2 class="rv">Astrologia biegacza</h2>
+    <p class="lead rv d1">Czas na kompletnie nienaukowe wnioski. Bo czemu nie. 🔮</p>
+
+    <div class="rv d1" style="margin-top:36px"><div class="subh">🌙 Bieganie a fazy Księżyca</div></div>
+    <div class="moons" id="moons"></div>
+    <p class="disclaim rv">Tak, policzyliśmy fazę Księżyca dla każdego biegu. Nie, NASA tego nie zatwierdza.</p>
+
+    <div class="rv d1" style="margin-top:46px"><div class="subh">♈ W którym znaku jesteś najmocniejszy</div></div>
+    <div class="zod" id="zodiac"></div>
+    <p class="disclaim rv">Dłuższy słupek = szybsze średnie tempo w dniu biegu (👑 = najszybszy znak).
+      Korelacja ≠ przyczyna — gwiazdy nie biegają za Ciebie.</p>
+  </section>
+
+  <!-- OUTRO -->
+  <section class="outro" style="order:11">
+    <div class="kicker rv">…i to dopiero czerwiec</div>
+    <h2 class="rv">Rok 2026 jest już<br>największy w historii.</h2>
+    <p class="lead rv d1"><span data-km="2026">856</span> km w pół roku, najdłuższy bieg w życiu (<span id="o-longest">22</span> km), najspokojniejsze tętno
+      i najwięcej łatwych kilometrów. Reszta sezonu dopiero przed Tobą. 🏃</p>
+  </section>
+
+  <footer class="rv" style="order:12">Running Wrapped · dane z Garmin Connect · 2014–2026</footer>
+</main>
+
+<script>
+const DATA = {};
+  const ZC = {Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)'};
+const $ = s => document.querySelector(s);
+
+/* ---------- reveal + chart triggers ---------- */
+const io = new IntersectionObserver((es)=>{
+  es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+},{threshold:.18});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+/* ---------- hero count-up ---------- */
+function countUp(el,to,dur=1600,dec=0){
+  const t0=performance.now();
+  function tick(t){
+    const p=Math.min((t-t0)/dur,1); const e=1-Math.pow(1-p,3);
+    el.textContent=(to*e).toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+    if(p<1)requestAnimationFrame(tick); else el.textContent=to.toLocaleString('pl').replace(/,/g,' ');
+  }
+  requestAnimationFrame(tick);
+}
+const L=DATA.lifetime;
+const heroObs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+  countUp($('#km'),L.km); countUp($('#runs'),L.runs); countUp($('#hours'),L.hours);
+  countUp($('#years'),L.years); $('#earth').textContent=L.earth_pct;
+  heroObs.disconnect();
+}})});
+heroObs.observe($('.hero'));
+
+/* ---------- year volume bars ---------- */
+(function(){
+  const wrap=$('#yearBars'); const max=Math.max(...DATA.years.map(y=>y.km));
+  DATA.years.forEach(y=>{
+    const hot=y.km>=700;
+    const b=document.createElement('div'); b.className='bar'+(hot?' hot':'');
+    b.innerHTML=`<div class="fill"><span class="v">${Math.round(y.km)}</span></div><div class="yr">${y.year}</div>`;
+    b.title=`${y.year}: ${y.km} km · ${y.runs} biegów · ${y.pace||'—'}/km`;
+    wrap.appendChild(b);
+    b._h=(y.km/max*92);  // cap at 92% so the value label has headroom above the tallest bar
+  });
+  new IntersectionObserver((es,o)=>{es.forEach(e=>{if(e.isIntersecting){
+    wrap.classList.add('in');
+    [...wrap.children].forEach((b,i)=>setTimeout(()=>b.querySelector('.fill').style.height=b._h+'%',i*70));
+    o.disconnect();
+  }})},{threshold:.3}).observe(wrap);
+})();
+
+/* ---------- monthly area chart ---------- */
+(function(){
+  const svg=$('#monthArea'); const W=1000,H=280,pad=6;
+  const m=DATA.months; const max=Math.max(...m.map(x=>x.km));
+  const x=i=>pad+i*(W-2*pad)/(m.length-1);
+  const y=v=>H-8-(v/max)*(H-26);
+  let line=`M ${x(0)} ${y(m[0].km)}`;
+  m.forEach((p,i)=>{if(i)line+=` L ${x(i)} ${y(p.km)}`;});
+  const area=line+` L ${x(m.length-1)} ${H} L ${x(0)} ${H} Z`;
+  svg.innerHTML=`
+    <defs>
+      <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FF5E5B" stop-opacity=".55"/>
+        <stop offset="1" stop-color="#FF5E5B" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#FFB037"/><stop offset="1" stop-color="#D7376B"/>
+      </linearGradient>
+    </defs>
+    <path class="area-path" d="${area}" fill="url(#ag)"/>
+    <path class="line-path" d="${line}" fill="none" stroke="url(#lg)" stroke-width="2.5"
+      stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+})();
+
+/* ---------- zone polarization stacks ---------- */
+(function(){
+  const z=DATA.zones_by_year.filter(r=>Object.values(r.pct).some(v=>v>0));
+  const wrap=$('#zoneStack'), years=$('#zoneYears');
+  const maxHrs=Math.max(...z.map(r=>['Z1','Z2','Z3','Z4','Z5'].reduce((s,k)=>s+r[k],0)));
+  z.forEach(r=>{
+    const total=['Z1','Z2','Z3','Z4','Z5'].reduce((s,k)=>s+r[k],0);
+    const s=document.createElement('div'); s.className='stack';
+    s.innerHTML=['Z1','Z2','Z3','Z4','Z5'].map(k=>
+      `<div class="seg" style="height:${r.pct[k]}%;background:${ZC[k]}"></div>`).join('');
+    s.title=`${r.year}: `+['Z1','Z2','Z3','Z4','Z5'].map(k=>`${k} ${r.pct[k]}%`).join(' · ');
+    wrap.appendChild(s); s._h=(total/maxHrs*100);
+    const yl=document.createElement('div'); yl.className='yr'; yl.textContent=r.year; years.appendChild(yl);
+  });
+  $('#zoneLegend').innerHTML=[['Z1','spokój'],['Z2','łatwo'],['Z3','tempo'],['Z4','mocno'],['Z5','max']]
+    .map(([k,l])=>`<span><i class="dot" style="background:${ZC[k]}"></i>${k} · ${l}</span>`).join('');
+  new IntersectionObserver((es,o)=>{es.forEach(e=>{if(e.isIntersecting){
+    [...wrap.children].forEach((s,i)=>setTimeout(()=>s.style.height=s._h+'%',i*70)); o.disconnect();
+  }})},{threshold:.3}).observe(wrap);
+})();
+
+/* ---------- pace line over volume ---------- */
+(function(){
+  const svg=$('#paceChart'); const W=1000,H=300,pad=30;
+  const ys=DATA.years; const maxKm=Math.max(...ys.map(y=>y.km));
+  const paces=ys.map(y=>y.pace_s).filter(Boolean);
+  const pMin=Math.min(...paces)-10,pMax=Math.max(...paces)+10;
+  const x=i=>pad+i*(W-2*pad)/(ys.length-1);
+  const bw=(W-2*pad)/ys.length*0.5;
+  let bars='',line='',dots='';
+  ys.forEach((y,i)=>{
+    const h=(y.km/maxKm)*(H-50);
+    bars+=`<rect x="${x(i)-bw/2}" y="${H-30-h}" width="${bw}" height="${h}" rx="3" fill="#23232c"/>`;
+    const yr=y.year%10;
+    bars+=`<text x="${x(i)}" y="${H-12}" fill="#8c8c9c" font-size="11" text-anchor="middle" font-family="Hanken Grotesk">'${String(y.year).slice(2)}</text>`;
+    if(y.pace_s){
+      const py=20+(y.pace_s-pMin)/(pMax-pMin)*(H-80);
+      line+=(line?' L':'M')+` ${x(i)} ${py}`;
+      dots+=`<circle cx="${x(i)}" cy="${py}" r="3.5" fill="#FFB037"/>`;
+      if(y.year===2017||y.year===2026)
+        dots+=`<text x="${x(i)}" y="${py-12}" fill="#f5efe6" font-size="12" text-anchor="middle" font-family="Anton">${y.pace}</text>`;
+    }
+  });
+  svg.innerHTML=`${bars}<path class="line-path" d="${line}" fill="none" stroke="#FFB037" stroke-width="2.5"
+    stroke-linejoin="round"/>${dots}`;
+})();
+
+/* ---------- gdzie: dom + Polska pin-map ---------- */
+(function(){
+  const P=DATA.poland; if(!P)return;
+  const total=DATA.lifetime.runs;
+  // LEVEL 0 — Wrocław home card (the big number lives in the scene HUD)
+  const hc=$('#homeCard');
+  if(hc) hc.innerHTML=`<div class="hbig">Tu zaczyna się <b>${Math.round(P.home.count/total*100)}%</b> Twoich biegów.</div>`;
+  // STEP 2 — Poland map with runner pins
+  const map=$('#plMap');
+  if(map){
+    const W=P.w,H=P.h,home={x:P.home.x,y:P.home.y};
+    const pl=P.places.map(p=>({...p,fx:p.x,fy:p.y}));
+    // gentle de-overlap: push pins apart (and off the home marker) without losing the geography
+    const MIN=70;
+    for(let it=0;it<90;it++) for(let i=0;i<pl.length;i++){
+      for(let j=i+1;j<pl.length;j++){
+        let dx=pl[j].fx-pl[i].fx,dy=pl[j].fy-pl[i].fy,d=Math.hypot(dx,dy)||1;
+        if(d<MIN){const k=(MIN-d)/2/d;pl[i].fx-=dx*k;pl[i].fy-=dy*k;pl[j].fx+=dx*k;pl[j].fy+=dy*k;}
+      }
+      let dx=pl[i].fx-home.x,dy=pl[i].fy-home.y,d=Math.hypot(dx,dy)||1;
+      if(d<MIN){const k=(MIN-d)/d;pl[i].fx+=dx*k;pl[i].fy+=dy*k;}
+      pl[i].fx=Math.max(38,Math.min(W-38,pl[i].fx));
+      pl[i].fy=Math.max(48,Math.min(H-34,pl[i].fy));
+    }
+    const sz=c=>20+Math.max(0,Math.min(1,(c-1)/24))*18;  // emoji 20..38, bigger = more runs
+    // names sit to the RIGHT of each pin (room in the empty east); spread them
+    // vertically so labels never overlap, with a thin leader back to the pin.
+    const LH=38;  // include a slot at home's y so no place label lands on the 🏠
+    const slots=pl.map(p=>({p,y:p.fy})).concat([{y:home.y}]).sort((a,b)=>a.y-b.y);
+    slots.forEach((s,i)=>{s.ly=i?Math.max(s.y,slots[i-1].ly+LH):s.y; if(s.p)s.p.ly=s.ly;});
+    const pins=pl.map(p=>{const r=sz(p.count),lx=p.fx+r*0.68+10;
+      return `<g class="pin">
+      <circle class="halo" cx="${p.fx}" cy="${p.fy}" r="${(r*0.9).toFixed(1)}"/>
+      <line class="leader" x1="${(p.fx+r*0.45).toFixed(1)}" y1="${p.fy}" x2="${(lx-5).toFixed(1)}" y2="${p.ly.toFixed(1)}"/>
+      <text class="emo" x="${p.fx}" y="${p.fy}" style="font-size:${r.toFixed(1)}px">🏃</text>
+      <text class="plbl" x="${lx.toFixed(1)}" y="${p.ly.toFixed(1)}"><tspan class="ln">${p.names.slice(0,2).join(' · ')}</tspan><tspan class="lc" dx="9">${p.count}</tspan></text>
+    </g>`;}).join('');
+    const homeMark=`<g class="pl-home">
+      <circle cx="${home.x}" cy="${home.y}" r="22" fill="var(--ink)" opacity="0.92"/>
+      <text class="plhome" x="${home.x}" y="${home.y}"
+        style="font-size:30px;text-anchor:middle;dominant-baseline:central">🏠</text></g>`;
+    // home drawn LAST so it never hides behind a place label
+    map.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img"
+        aria-label="Mapa kraju: miejsca biegów poza domem, podpisane nazwami">
+      <path class="pl-outline" d="${P.outline}"/>${pins}${homeMark}</svg>`;
+  }
+})();
+
+/* ---------- screenshot mode (only with ?shot) — instant, no scroll ---------- */
+function _shotMode(){
+  if(!location.search.includes('shot'))return;
+  $('.hero').style.minHeight='auto';
+  document.querySelectorAll('section').forEach(s=>s.style.padding='70px 0');
+  document.querySelectorAll('.rv,.area-wrap,section').forEach(e=>e.classList.add('in'));
+  setTimeout(()=>{
+    document.querySelectorAll('#yearBars .bar').forEach(b=>{const f=b.querySelector('.fill');if(b._h!=null)f.style.height=b._h+'%';});
+    document.querySelectorAll('#zoneStack .stack').forEach(s=>{if(s._h!=null)s.style.height=s._h+'%';});
+    document.querySelectorAll('.bars .b').forEach(b=>{const f=b.querySelector('.f');if(f&&b._h!=null)f.style.height=b._h+'%';});
+    document.querySelectorAll('.rfill,.zf').forEach(f=>f.style.width=f.dataset.w+'%');
+    const fmt=n=>n.toLocaleString('pl').replace(/,/g,' ');
+    $('#km').textContent=fmt(L.km);$('#runs').textContent=fmt(L.runs);
+    $('#hours').textContent=fmt(L.hours);$('#years').textContent=L.years;$('#earth').textContent=L.earth_pct;
+    const q=new URLSearchParams(location.search);
+    const sl=q.get('slide');
+    if(window.__maps)window.__maps.activate(sl!==null?+sl:0);
+    const lv=q.get('lvl');
+    if(lv!==null&&window.__scene)window.__scene.go(+lv);
+  },80);
+}
+
+/* ---------- records ---------- */
+(function(){
+  const r=DATA.records;
+  const cards=[
+    {lbl:'Najdłuższy bieg',big:r.longest.km+' km',sub:r.longest.date},
+    {lbl:'Najbogatszy rok',big:Math.round(r.biggest_year.km)+' km',sub:r.biggest_year.year+' (do czerwca)'},
+    r.best_5k&&{lbl:'Rekord ~5K',big:r.best_5k.time,sub:r.best_5k.pace+'/km · '+r.best_5k.date},
+    r.best_10k&&{lbl:'Rekord ~10K',big:r.best_10k.time,sub:r.best_10k.pace+'/km · '+r.best_10k.date},
+    {lbl:'Rekordowy tydzień',big:r.peak_week.km+' km',sub:r.peak_week.week},
+    {lbl:'Najlepszy miesiąc',big:r.best_month.km+' km',sub:r.best_month.ym},
+    {lbl:'Najszybszy rok',big:r.fastest_year.pace,sub:r.fastest_year.year+' · śr. tempo/km'},
+    {lbl:'Łącznie',big:L.km.toLocaleString('pl').replace(/,/g,' ')+' km',sub:L.runs+' biegów'},
+  ].filter(Boolean);
+  $('#records').innerHTML=cards.map(c=>
+    `<div class="card rv"><div class="lbl">${c.lbl}</div><div class="big">${c.big}</div><div class="sub">${c.sub}</div></div>`
+  ).join('');
+  document.querySelectorAll('#records .rv').forEach(el=>io.observe(el));
+})();
+
+/* ---------- generic mini-bars (weekday / hours / distance) ---------- */
+function obsBars(wrap){
+  new IntersectionObserver((es,o)=>{es.forEach(e=>{if(e.isIntersecting){
+    wrap.classList.add('in');
+    [...wrap.children].forEach((b,i)=>setTimeout(()=>{const f=b.querySelector('.f');if(f)f.style.height=b._h+'%';},i*40));
+    o.disconnect();
+  }})},{threshold:.25}).observe(wrap);
+}
+function simpleBars(sel,items,getVal,getLabel,hotFn){
+  const wrap=$(sel); const max=Math.max(...items.map(getVal),1);
+  items.forEach((it,i)=>{
+    const v=getVal(it); const b=document.createElement('div');
+    b.className='b'+(hotFn&&hotFn(it,i)?' hot':'');
+    b.innerHTML=`<div class="bv">${v||''}</div><div class="f"></div><div class="bl">${getLabel(it,i)}</div>`;
+    b.title=`${getLabel(it,i)}: ${v}`; wrap.appendChild(b); b._h=v/max*100;
+  });
+  obsBars(wrap);
+}
+function renderHourRadar(sel,hours){
+  const cx=160,cy=160,r0=20,rmax=132;
+  const max=Math.max(...hours.map(h=>h.runs),1);
+  const ang=i=>(i/24)*2*Math.PI-Math.PI/2;        // 0h at top, clockwise
+  const rad=v=>r0+(v/max)*(rmax-r0);               // length = number of runs (linear)
+  const pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
+  let grid='';
+  [0.25,0.5,0.75,1].forEach(f=>grid+=`<circle cx="${cx}" cy="${cy}" r="${(r0+(rmax-r0)*f).toFixed(1)}" fill="none" stroke="#1f1f29"/>`);
+  for(let i=0;i<24;i+=2){const[x,y]=pt(i,rmax);grid+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#171720"/>`;}
+  const poly=hours.map((h,i)=>pt(i,rad(h.runs)).map(v=>v.toFixed(1)).join(',')).join(' ');
+  let dots='';hours.forEach((h,i)=>{if(h.runs>0){const[x,y]=pt(i,rad(h.runs));const big=i>=4&&i<=7;
+    dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${big?3.2:1.8}" fill="${big?'#FFB037':'#FF6A4D'}"/>`;}});
+  const lbl=[0,6,12,18].map(h=>{const[x,y]=pt(h,rmax+18);
+    return `<text x="${x.toFixed(0)}" y="${(y+4).toFixed(0)}" fill="#8c8c9c" font-size="12" text-anchor="middle" font-family="Anton">${h}:00</text>`;}).join('');
+  const peak=hours.reduce((a,b)=>b.runs>a.runs?b:a);
+  $(sel).innerHTML=`<svg viewBox="0 0 320 320"><defs>
+    <radialGradient id="radF" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFB037" stop-opacity=".55"/><stop offset="1" stop-color="#FF3D6E" stop-opacity=".22"/></radialGradient></defs>
+    ${grid}
+    <polygon points="${poly}" fill="url(#radF)" stroke="#FF7A45" stroke-width="2" stroke-linejoin="round"/>
+    ${dots}${lbl}
+    <text x="${cx}" y="${cy-2}" fill="#f5efe6" font-size="30" text-anchor="middle" font-family="Anton">${peak.h}:00</text>
+    <text x="${cx}" y="${cy+18}" fill="#8c8c9c" font-size="11" text-anchor="middle">${peak.runs} biegów</text>
+  </svg>`;
+}
+renderHourRadar('#hourChart',DATA.hours);
+simpleBars('#wdBars',DATA.weekday,w=>w.runs,w=>w.d);
+simpleBars('#distBars',DATA.dist_hist,d=>d.runs,d=>d.label,
+  (d)=>d.runs===Math.max(...DATA.dist_hist.map(x=>x.runs)));
+
+/* ---------- moon + zodiac (for fun) ---------- */
+(function(){
+  const fastest=DATA.moon.filter(m=>m.pace_s).sort((a,b)=>a.pace_s-b.pace_s)[0];
+  $('#moons').innerHTML=DATA.moon.map(m=>{
+    const [ic,...nm]=m.phase.split(' ');
+    return `<div class="moon${m===fastest?' best':''}"><div class="ph">${ic}</div>
+      <div class="nm">${nm.join(' ')}</div><div class="pc">${m.pace||'—'}</div>
+      <div class="rn">${m.runs} biegów${m===fastest?' · najszybciej ⚡':''}</div></div>`;
+  }).join('');
+  // sort by speed (fastest avg pace first); bar length = how fast (longer = faster)
+  const zz=DATA.zodiac.filter(s=>s.pace_s).sort((a,b)=>a.pace_s-b.pace_s);
+  const pMin=Math.min(...zz.map(s=>s.pace_s)), pMax=Math.max(...zz.map(s=>s.pace_s));
+  $('#zodiac').innerHTML=zz.map(s=>{
+    const king=s.sign===DATA.strongest_sign;
+    const w=pMax===pMin?100:38+(pMax-s.pace_s)/(pMax-pMin)*62;  // 38..100%, faster = wider
+    return `<div class="zrow${king?' king':''}"><div class="zn">${s.sign}${king?' 👑':''}</div>
+      <div class="ztrack"><div class="zf" data-w="${w.toFixed(0)}"></div></div>
+      <div class="zp">${s.pace}/km</div></div>`;
+  }).join('');
+  new IntersectionObserver((es,o)=>{es.forEach(e=>{if(e.isIntersecting){
+    document.querySelectorAll('#zodiac .zf').forEach((f,i)=>setTimeout(()=>f.style.width=f.dataset.w+'%',i*60));
+    o.disconnect();
+  }})},{threshold:.2}).observe($('#zodiac'));
+})();
+
+/* ---------- map carousel on dark Leaflet tiles ---------- */
+(function(){
+  const LF=window.L;  // Leaflet — local `L` is the lifetime data, so use window.L
+  const maps=DATA.maps||[]; if(!maps.length||!LF||!LF.map)return;
+  const slides=$('#mapSlides'), dots=$('#mapDots'), counter=$('#mapCounter');
+  const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  slides.innerHTML=maps.map(m=>`<div class="slide">
+      <div class="lmap"></div><div class="grad"></div>
+      <div class="cap"><div class="t">${m.title}</div><div class="s">${m.subtitle}</div></div>
+    </div>`).join('');
+  dots.innerHTML=maps.map((_,i)=>`<button type="button" role="tab" data-i="${i}"
+      aria-label="Mapa ${i+1}: ${maps[i].title}" class="${i===0?'on':''}"><i></i></button>`).join('');
+  const slideEls=[...slides.children];
+  const built=[];
+  function build(i){
+    if(built[i])return built[i];
+    const m=maps[i], el=slideEls[i].querySelector('.lmap');
+    const map=LF.map(el,{preferCanvas:true,zoomControl:false,attributionControl:false,dragging:false,
+      scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,
+      touchZoom:false,zoomAnimation:false,fadeAnimation:false});
+    LF.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
+    const bounds=LF.latLngBounds([]);
+    m.tracks.forEach(t=>t.forEach(p=>bounds.extend(p)));
+    return built[i]={map,bounds,tracks:m.tracks,id:m.id,lines:null};
+  }
+  // Set the view FIRST, then add the route lines — adding polylines before the
+  // map has a stable view leaves the SVG renderer transform out of sync with
+  // the tiles (route ends up shifted by exactly the renderer offset).
+  function draw(i){
+    const rec=build(i);
+    setTimeout(()=>{
+      rec.map.invalidateSize(false);
+      rec.map.fitBounds(rec.bounds,{padding:[22,22],animate:false});
+      if(!rec.lines){
+        rec.lines=rec.tracks.map(t=>LF.polyline(t,{color:'#FF7A45',
+          weight:rec.id==='home'?1.4:2.4,opacity:.95}).addTo(rec.map));
+      }
+      if(rec.drawn)return; rec.drawn=true;
+      if(RM){rec.lines.forEach((l,k)=>l.setLatLngs(rec.tracks[k]));return;}  // honour reduced-motion
+      // Canvas-friendly "drawing" animation: grow each polyline along its path.
+      const N=30; let s=0;
+      rec.lines.forEach(l=>l.setLatLngs([]));
+      const tick=()=>{
+        s++; const f=s/N;
+        rec.lines.forEach((l,k)=>{const t=rec.tracks[k];
+          l.setLatLngs(t.slice(0,Math.max(2,Math.ceil(t.length*f))));});
+        if(s<N)requestAnimationFrame(tick);
+        else rec.lines.forEach((l,k)=>l.setLatLngs(rec.tracks[k]));
+      };
+      requestAnimationFrame(tick);
+    },140);
+  }
+  const dotBtns=[...dots.querySelectorAll('button')];
+  let cur=-1;
+  function activate(i){
+    i=Math.max(0,Math.min(maps.length-1,i)); if(i===cur)return; cur=i;
+    slideEls.forEach((s,j)=>s.classList.toggle('active',j===i));
+    dotBtns.forEach((d,j)=>{const on=j===i;d.classList.toggle('on',on);d.setAttribute('aria-selected',on);});
+    counter.innerHTML=`<b>${i+1}</b> / ${maps.length}`;
+    draw(i);  // build + fit + draw the now-visible slide
+  }
+  const wrap=d=>(cur+d+maps.length)%maps.length;  // wrap-around so arrows are never dead
+  $('#mapPrev').onclick=()=>activate(wrap(-1));
+  $('#mapNext').onclick=()=>activate(wrap(1));
+  dotBtns.forEach(d=>d.onclick=()=>activate(+d.dataset.i));
+  // keyboard: arrows move between maps when the carousel is focused
+  slides.addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'){e.preventDefault();activate(wrap(-1));}
+    else if(e.key==='ArrowRight'){e.preventDefault();activate(wrap(1));}
+  });
+  // touch swipe
+  let tx=null;
+  slides.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+  slides.addEventListener('touchend',e=>{
+    if(tx===null)return; const dx=e.changedTouches[0].clientX-tx; tx=null;
+    if(Math.abs(dx)>40) activate(wrap(dx<0?1:-1));
+  },{passive:true});
+  // keep the visible map aligned after viewport resize / orientation change
+  let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{
+    const rec=built[cur]; if(!rec)return;
+    rec.map.invalidateSize(false); rec.map.fitBounds(rec.bounds,{padding:[22,22],animate:false});
+  },200);});
+  // activate the first slide once the carousel scrolls into view
+  new IntersectionObserver((es,o)=>{es.forEach(e=>{if(e.isIntersecting){activate(0);o.disconnect();}})},
+    {threshold:.25}).observe(slides);
+  window.__maps={activate,count:maps.length};
+})();
+
+/* ---------- scale / perspective ---------- */
+(function(){
+  const s=DATA.scale; if(!s)return;
+  const fmt=n=>n.toLocaleString('pl').replace(/,/g,' ');
+  const climbed=s.peaks.filter(p=>p.x>=1).sort((a,b)=>b.h-a.h)[0];
+  const next=s.peaks.find(p=>p.x<1);
+  $('#scaleElev').innerHTML=`<div class="lbl">Łączne przewyższenia</div>
+    <div class="huge">${fmt(s.ascent_m)} m</div>
+    <div class="cmp">⛰️ ${climbed?`wyżej niż <b>${climbed.name}</b> (${fmt(climbed.h)} m)`:''}${next?` — ${Math.round(next.x*100)}% drogi na ${next.name}`:''}</div>
+    <div class="rows">${s.peaks.map(p=>`<div class="r"><span>${p.name} · ${fmt(p.h)} m</span><b>×${p.x}</b></div>`).join('')}</div>`;
+  const c=s.distance.closest, home=(DATA.geo&&DATA.geo.home_city)||'dom';
+  $('#scaleDist').innerHTML=`<div class="lbl">Łączny dystans</div>
+    <div class="huge">${fmt(L.km)} km</div>
+    <div class="cmp">🧭 to prawie tyle, co <b>${home} → ${c.city}</b> (${fmt(c.km)} km)</div>
+    <div class="rows">${s.distance.cities.map(x=>`<div class="r"><span>${home} → ${x.city} · ${fmt(x.km)} km</span><b>×${(L.km/x.km).toFixed(1)}</b></div>`).join('')}</div>`;
+})();
+
+/* ---------- countries highlight ---------- */
+(function(){
+  // "Świat" level = abroad, so drop the Polska baseline chip (it's levels 0-1)
+  const cs=((DATA.scale&&DATA.scale.countries)||[]).filter(c=>c.name!=='Polska');
+  if(!cs.length)return;
+  $('#countries').innerHTML=cs.map(c=>
+    `<div class="country foreign"><span class="fl">${c.flag}</span>
+      <div><div class="nm">${c.name}</div><div class="rn">${c.runs} ${c.runs===1?'bieg':'biegów'}</div></div></div>`
+  ).join('');
+})();
+
+/* ---------- gdzie: zoom-out scene (Wrocław -> Polska -> Świat) ---------- */
+(function(){
+  const stage=$('#sceneStage'); if(!stage)return;
+  const P=DATA.poland, total=DATA.lifetime.runs;
+  const foreign=((DATA.scale&&DATA.scale.countries)||[]).filter(c=>c.name!=='Polska');
+  const tabs=[...document.querySelectorAll('.lvltab')];
+  const lvls=[...stage.querySelectorAll('.lvl')];
+  const bull=document.querySelector('.bullseye');
+  const statEl=$('#sceneStat'), subEl=$('#sceneSub');
+  const HEAD=[
+    {n:P.home.count, s:'biegów z domu'},
+    {n:P.other_runs, s:`na wyjazdach · ${P.places.length} okolic`},
+    {n:foreign.length, s:foreign.length===1?'kraj poza Polską':'kraje poza Polską'},
+  ];
+  let cur=-1;
+  const setH=()=>{const on=lvls[cur]; if(on)stage.style.height=on.offsetHeight+'px';};
+  function go(i){
+    i=Math.max(0,Math.min(2,i)); if(i===cur)return; cur=i;
+    tabs.forEach(t=>{const on=+t.dataset.lvl===i;t.classList.toggle('on',on);t.setAttribute('aria-selected',on);});
+    lvls.forEach((l,j)=>l.classList.toggle('on',j===i));
+    bull.setAttribute('class','bullseye l'+i);  // SVG className is read-only
+    statEl.textContent=HEAD[i].n; subEl.textContent=HEAD[i].s;
+    requestAnimationFrame(setH);
+  }
+  tabs.forEach(t=>t.onclick=()=>go(+t.dataset.lvl));
+  document.querySelector('.lvltabs').addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+    else if(e.key==='ArrowRight'){e.preventDefault();go(cur+1);}
+  });
+  let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(setH,160);});
+  go(0);
+  setTimeout(setH,300); setTimeout(setH,900);
+  window.__scene={go};
+})();
+
+/* ---------- dynamic copy — keeps inline prose numbers in sync with the data
+   so a data refresh never leaves stale figures in the text ---------- */
+(function(){
+  const ky=y=>{const r=DATA.years.find(x=>x.year===y);return r?Math.round(r.km):0;};
+  document.querySelectorAll('[data-km]').forEach(el=>{el.textContent=ky(+el.dataset.km);});
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  // geo labels (home city / country) come from the data — no hardcoded place
+  const g=DATA.geo||{};
+  set('tab-home',g.home_city); set('tab-country',g.country); set('tab-flag',g.country_flag);
+  // when-phrase from the last run date
+  const MON=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia',
+    'września','października','listopada','grudnia'];
+  const p=(DATA.lifetime.last||'').split('-').map(Number), mm=p[1], dd=p[2];
+  if(mm) set('c-when',(dd<=10?'początek':dd<=20?'połowa':'koniec')+' '+MON[mm-1]);
+  // first / last year drive the rest (works for any athlete's span)
+  const yrs=DATA.years||[]; const first=yrs[0]&&yrs[0].year, last=yrs.length&&yrs[yrs.length-1].year;
+  const z=(DATA.zones_by_year||[]).find(x=>x.year===last);
+  if(z&&z.pct) set('z-easy',(z.pct.Z1||0)+(z.pct.Z2||0));
+  if(first&&ky(first)) set('p-mult',Math.max(2,Math.floor(ky(last)/ky(first))));
+  const lg=DATA.records&&DATA.records.longest; if(lg) set('o-longest',Math.round(lg.km));
+})();
+
+_shotMode();
+</script>
+</body>
+</html>
