@@ -286,6 +286,8 @@ def main():
     dups = len(garmin_runs) + len(strava_runs) - len(runs)
     print(f"  · sources: {len(garmin_runs)} Garmin + {len(strava_runs)} Strava, "
           f"{dups} dups → {len(runs)} runs")
+    rec_path = cache / "records.json"
+    rec_json = json.loads(rec_path.read_text()) if rec_path.exists() else None
     world = World(lang=cfg.get("lang", "pl"))
 
     # home + country
@@ -454,13 +456,14 @@ def main():
         "geo": {"home_city": home_city, "country": home_country, "country_flag": flag_emoji(home_iso)},
         "years": years, "months": months, "zones_by_year": zones_by_year,
         "zone_bounds": [round(b) for b in bounds],
-        "records": {"longest": {"km": round(longest.distance_km, 2),
-                                "date": longest.start_time.strftime("%Y-%m-%d"), "name": longest.name or "—"},
-                    "best_month": {"ym": best_month, "km": round(by_month[best_month]["km"])},
-                    "peak_week": {"week": peak_week, "km": round(by_week[peak_week], 1)},
-                    "biggest_year": {"year": biggest_year["year"], "km": biggest_year["km"]},
-                    "fastest_year": {"year": fastest_year["year"], "pace": fastest_year["pace"]},
-                    "best_5k": best_at(4.8, 5.2), "best_10k": best_at(9.5, 10.5)},
+        "records": build_records_block(
+            rec_json=rec_json,
+            longest={"km": round(longest.distance_km, 2),
+                     "date": longest.start_time.strftime("%Y-%m-%d"), "name": longest.name or "—"},
+            totals={"km": round(total_km), "runs": len(runs)},
+            peak_week={"week": peak_week, "km": round(by_week[peak_week], 1)},
+            fastest_year={"year": fastest_year["year"], "pace": fastest_year["pace"]},
+            fallback_5k=best_at(4.8, 5.2), fallback_10k=best_at(9.5, 10.5)),
         "regions": regions, "poland": cmap, "weekday": weekday, "hours": hours,
         "dist_hist": dist_hist, "moon": moon_list, "fav_moon": fav_moon,
         "zodiac": sorted(zodiac_list, key=lambda z: -z["runs"]), "strongest_sign": strongest,
