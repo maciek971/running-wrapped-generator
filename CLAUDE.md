@@ -18,13 +18,31 @@ When the user first opens this repo and asks for their Running Wrapped, run the
 
 ## First-run playbook
 
-**1. Environment**
-```
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-```
+This is a **one-stop-shop**: do the preflight yourself, decide the path, and only
+stop to ask the user for a real choice or their own login. Don't make them figure
+out setup.
 
-**2. Get their Garmin data into `./cache/`**
+**0. Preflight — check the environment, fix what you can**
+1. **Python 3**: `python3 --version`. If missing, tell the user how to install it for
+   their OS and stop until it's there.
+2. **Dependencies**: create a venv and install — `python3 -m venv .venv` then
+   `. .venv/bin/activate && pip install -r requirements.txt`. (If pip fails, surface
+   the error and fix it before continuing.)
+3. **`gh` (only needed for the optional deploy in step 7)** — check `gh auth status`;
+   if absent, just note it and carry on (not needed to build the page).
+4. **Pick the Garmin data path** and tell the user which you'll use:
+   - **Look at your own connected tools for a Garmin MCP** (tool names like
+     `mcp__garmin__get_activities` / `*get_activities*`). If one is present → use the
+     **MCP path** (step 1, MCP variant). Fastest, no password.
+   - **No Garmin MCP?** That's fine — **default to the no-MCP path** (`fetch_garmin.py`,
+     step 1). It needs nothing extra beyond the deps above and the user's own login.
+     Don't block on the MCP.
+   - Only if the user *wants* an MCP (or `garminconnect` won't log in): offer to set one
+     up. Search for a current "Garmin MCP" server, show the user the exact
+     `claude mcp add …` / config change you propose, get their OK (it edits their Claude
+     config), then restart the MCP and use it. Treat this as optional, not required.
+
+**1. Get their Garmin data into `./cache/`**
 - If a **Garmin MCP** is connected: list the user's running activities and download
   each one's FIT file to `cache/fit/<activityId>.fit`, and write `cache/manifest.json`
   as `{ "<id>": {"fit_file":"<id>.fit","name":"<activity name>","start_time":"<gmt>"} }`.
@@ -36,14 +54,14 @@ pip install -r requirements.txt
   cached afterwards) and **auto-writes `birth_year` + `resting_hr` from their Garmin
   profile** into `me.json`. Incremental: safe to re-run.
 
-**3. Config** — `me.json` is mostly **auto-filled from Garmin** in step 2 (birth year,
+**2. Config** — `me.json` is mostly **auto-filled from Garmin** in step 1 (birth year,
 resting HR → HR zones; max HR comes from the FIT data; zones recompute every run).
 Just:
 - set `lang` (default `pl`), leave `home_city` as `null` (auto-detected).
-- only **ask the user** for `birth_year` / `resting_hr` if step 2 couldn't fetch them
+- only **ask the user** for `birth_year` / `resting_hr` if step 1 couldn't fetch them
   (e.g. profile private) — otherwise don't bother them.
 
-**4. Generate**
+**3. Generate**
 ```
 python generate.py
 ```
@@ -51,7 +69,7 @@ It prints the detected `home`, `country`, `countries` and `pins`. **Confirm the 
 city with the user** — if the auto-detected name is wrong, set `home_city` in
 `me.json` and re-run.
 
-**5. Colors (ask, then restyle)**
+**4. Colors (ask, then restyle)**
 Ask: *"Jakie kolory lubisz / jaki klimat? (np. ciepły zachód słońca, chłodny błękit, neon…)"*
 Then recolor by editing the `:root` block at the top of `template.html`:
 - `--a1`, `--a2`, `--a3` — the **accent gradient** (light → mid → deep). This is the
@@ -63,7 +81,7 @@ Then recolor by editing the `:root` block at the top of `template.html`:
 Re-run `python generate.py`, open `index.html`, iterate with them until they like it.
 Keep text contrast ≥ 4.5:1.
 
-**6. Storytelling (analyse, then rewrite the copy)**
+**5. Storytelling (analyse, then rewrite the copy)**
 The template ships with placeholder Polish narrative. Read `data.json` and make the
 prose **true to THIS runner**, then rewrite the chapter intros + the `.edu` callouts
 + the outro in `template.html`. Look at and reflect:
@@ -77,11 +95,11 @@ Rules: keep their language; keep the dynamic hooks (`[data-km="YEAR"]`, the
 so a future refresh won't go stale. Don't invent facts; describe what the data shows.
 Re-run `python generate.py` after editing.
 
-**7. Preview** — open `index.html` in a browser (maps need internet — Leaflet CDN).
+**6. Preview** — open `index.html` in a browser (maps need internet — Leaflet CDN).
 Check: hero numbers, the year bars, the “gdzie” scene tabs (home / country / Świat),
 and the route-map carousel all render.
 
-**8. Deploy (optional)** — only if they want it online and accept it's public:
+**7. Deploy (optional)** — only if they want it online and accept it's public:
 - unguessable repo name (e.g. `running-wrapped-$(openssl rand -hex 3)`), public,
   push **only `index.html`** with the user's own `gh` account.
 - the template already has `<meta name="robots" content="noindex, nofollow">`.
