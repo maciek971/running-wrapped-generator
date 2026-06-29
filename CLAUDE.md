@@ -14,6 +14,9 @@ When the user first opens this repo and asks for their Running Wrapped, run the
   connected (use it), or they run `fetch_garmin.py` and type the login themselves.
 - The data is personal (home-area GPS, daily routine). If you deploy to GitHub
   Pages, it becomes **public to anyone with the link** — confirm explicitly first.
+- **Strava data is just as personal as Garmin's** (GPS, routine). The same
+  public-on-deploy warning applies. Strava is read **only via the Strava MCP**
+  (read-only, account-scoped) — never ask for a Strava password.
 - Keep everything in the user's language (default Polish; `me.json → lang`).
 
 ## First-run playbook
@@ -57,6 +60,26 @@ into `me.json` (these drive the HR zones). Safe to re-run.
   activities, save each FIT to `cache/fit/<id>.fit` and a `cache/manifest.json` of
   `{id:{fit_file,name,start_time}}`, plus birth year + resting HR — but `fetch_garmin.py`
   is faster for the bulk download, so prefer it.)*
+
+**1b. (optional) Strava — only if a Strava MCP is connected.** Use it when the
+runner has more history in Strava than Garmin, or no Garmin at all. Drive it
+through the connected Strava MCP (read-only):
+- list the athlete's activities (paginate); keep type `Run`;
+- for each activity **not already in `cache/strava/manifest.json`**, fetch its
+  summary + streams (`latlng`, `heartrate`, `time`, `altitude`) and write a
+  normalized `cache/strava/<id>.json`:
+  ```json
+  {"id":"strava-<id>","name":"...","start_time":"<UTC ISO8601>",
+   "utc_offset_h":2,"distance_km":8.42,"duration_s":2715,
+   "avg_hr":154,"max_hr":178,"ascent_m":63,
+   "latlng":[[lat,lon],...],"hr":[bpm,...]}
+  ```
+  then record `{id:{name,start_time}}` in `cache/strava/manifest.json` so re-runs
+  only fetch new activities.
+- `generate.py` merges Garmin + Strava automatically and **deduplicates** runs
+  that appear in both (matched by start time ±5 min + distance), preferring the
+  Garmin original. Nothing else to do — just run `python generate.py`.
+- If no Strava MCP is connected, skip this; everything stays Garmin-only.
 
 **2. Config** — `me.json` is mostly **auto-filled from Garmin** in step 1 (birth year,
 resting HR → HR zones; max HR comes from the FIT data; zones recompute every run).
