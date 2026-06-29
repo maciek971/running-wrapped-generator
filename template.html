@@ -315,11 +315,24 @@
 
   /* moon cards + zodiac */
   .moons{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
-  @media(max-width:640px){.moons{grid-template-columns:repeat(2,1fr)}}
   .moon{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center}
   .moon.best{border-color:var(--a1);box-shadow:0 0 26px rgba(255,176,55,.18)}
   .moon .ph{font-size:30px}.moon .nm{font-size:13px;color:var(--muted);margin:6px 0 10px}
   .moon .pc{font-family:'Anton';font-size:26px}.moon .rn{font-size:12px;color:var(--muted)}
+  /* mobile: keep all 4 phases in one compact row and drop the card chrome
+     (the elevated box + border made them read as tappable buttons). Placed AFTER
+     the base .moon rules so these win at equal specificity; min-width:0 keeps the
+     four 1fr columns equal instead of long names blowing out their track. */
+  @media(max-width:640px){
+    .moons{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:24px}
+    .moon{background:transparent;border:0;border-radius:0;padding:6px 2px;box-shadow:none;min-width:0;overflow-wrap:anywhere}
+    .moon.best{background:transparent;border:0;box-shadow:none}
+    .moon.best .pc{color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+    .moon .ph{font-size:26px}
+    .moon .nm{font-size:9.5px;margin:4px 0 6px;line-height:1.15}
+    .moon .pc{font-size:16px}
+    .moon .rn{font-size:9px;line-height:1.2}
+  }
   .zod{margin-top:26px;display:flex;flex-direction:column;gap:9px}
   .zrow{display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:14px}
   .zrow.king .zn{color:var(--a1)}
