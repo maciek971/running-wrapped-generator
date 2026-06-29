@@ -21,8 +21,20 @@ from pathlib import Path
 from garmin_records import normalize_records
 
 HERE = Path(__file__).resolve().parent
-CACHE = Path(os.getenv("WRAPPED_CACHE") or (HERE / "cache"))
 TOKENS = os.path.expanduser("~/.garminconnect")
+
+
+def _resolve_cache_dir(env_val, cfg, here):
+    """Pick the cache dir: WRAPPED_CACHE env > me.json `cache_dir` > <here>/cache.
+    Mirrors generate.py's resolution so fetch and generate always use the same
+    location (otherwise records.json lands where generate never looks)."""
+    return Path(env_val or (cfg or {}).get("cache_dir") or (here / "cache"))
+
+
+def _cache_dir():
+    me = HERE / "me.json"
+    cfg = json.loads(me.read_text()) if me.exists() else {}
+    return _resolve_cache_dir(os.getenv("WRAPPED_CACHE"), cfg, HERE)
 
 
 def _login():
@@ -114,7 +126,7 @@ def _merge_me_json(found: dict):
     return cfg
 
 
-def _save_records(g):
+def _save_records(g, cache):
     """Best-effort: pull official PRs + race predictions into cache/records.json.
     A failure here must never block the activity download."""
     try:
@@ -127,7 +139,7 @@ def _save_records(g):
         preds = None
     rec = normalize_records(prs, preds)
     if rec["personal_records"] or rec["predictions"]:
-        (CACHE / "records.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1))
+        (cache / "records.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1))
         print(f"  · Garmin records → {len(rec['personal_records'])} PR, "
               f"{len(rec['predictions'])} predictions")
 
@@ -135,14 +147,15 @@ def _save_records(g):
 def main():
     from garminconnect import Garmin
 
-    fit = CACHE / "fit"
+    cache = _cache_dir()                   # same location generate.py reads (me.json cache_dir)
+    fit = cache / "fit"
     fit.mkdir(parents=True, exist_ok=True)
-    man_path = CACHE / "manifest.json"
+    man_path = cache / "manifest.json"
     manifest = json.loads(man_path.read_text()) if man_path.exists() else {}
 
     g = _login()
     _merge_me_json(profile_defaults(g))   # birth year + resting HR for HR zones
-    _save_records(g)                      # official PRs + race predictions
+    _save_records(g, cache)               # official PRs + race predictions
 
     summaries, start = [], 0
     while True:
@@ -173,7 +186,7 @@ def main():
             print(f"  skip {aid}: {exc}")
         if i % 25 == 0 or i == len(todo):
             print(f"  {i}/{len(todo)}")
-    print(f"✓ cache ready at {CACHE} ({len(manifest)} activities)")
+    print(f"✓ cache ready at {cache} ({len(manifest)} activities)")
 
 
 if __name__ == "__main__":
