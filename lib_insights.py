@@ -140,10 +140,18 @@ def build_briefing(runs, data, home) -> dict:
     if lg:
         add("longest", 0.7, f"Najdłuższy bieg: {lg.get('km')} km — „{(lg.get('name') or '').strip()}” "
             f"({lg.get('date')}).", km=lg.get("km"), name=(lg.get("name") or "").strip(), date=lg.get("date"))
-    for k, lbl in (("best_5k", "5K"), ("best_10k", "10K")):
-        pr = rec.get(k)
-        if pr:
-            add(k, 0.45, f"Rekord ~{lbl}: {pr['time']} ({pr['pace']}/km, {pr['date']}).", **pr)
+    for d in rec.get("race", []):
+        msg = f"Rekord {d['label']}: {d['time']} ({d['pace']}/km)."
+        pred = d.get("pred")
+        if pred:
+            how = "szybciej" if pred.get("faster") else "wolniej"
+            msg += f" Garmin szacuje dziś {pred['time']} ({pred['delta']} {how} niż rekord)."
+        add("pr_" + d["key"], 0.45, msg, label=d["label"], time=d["time"], pace=d["pace"], pred=pred)
+    mar = rec.get("marathon")
+    if mar:
+        add("marathon_pred", 0.4,
+            f"Garmin przewiduje, że na maraton stać Cię dziś na ~{mar['time']} — a nie masz jeszcze rekordu na tym dystansie.",
+            time=mar["time"])
 
     # --- events from run titles (very personal) -----------------------------
     events = []

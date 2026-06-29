@@ -719,7 +719,7 @@ function _shotMode(){
       <div class="sub" style="color:var(--cream);opacity:.6;font-size:12.5px;margin-top:9px">${esc(r.longest.name)} · ${esc(r.longest.date)}</div></div>
     <div class="num">${String(lw).split('.')[0]}<span class="u">${lw%1?'.'+String(lw).split('.')[1]:''} km</span></div></div>`;
 
-  if(r.race.length){
+  if(r.race&&r.race.length){
     h+='<div class="rec-cap">Rekordy wyścigowe · rekord vs forma dziś (Garmin)</div><div class="rec-race">';
     h+=r.race.map(d=>`<div class="rtile"><div class="rec-lbl">${esc(d.label)}</div>
       <div class="t">${d.time}</div><div class="pace">${d.pace} / km</div>`+
@@ -727,7 +727,7 @@ function _shotMode(){
       `</div>`).join('');
     h+='</div>';
   }
-  if(r.sprint.length){
+  if(r.sprint&&r.sprint.length){
     h+='<div class="rec-sprint">'+r.sprint.map(d=>`<div class="rtile"><div class="rec-lbl">${esc(d.label)}</div><div class="t">${d.time}</div><div class="pace">${d.pace}/km</div></div>`).join('')+'</div>';
   }
   if(r.marathon){

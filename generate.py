@@ -421,9 +421,7 @@ def main():
     fav_moon = max(moon_list, key=lambda m: m["runs"])["phase"]
 
     longest = max(runs, key=lambda r: r.distance_km)
-    best_month = max(by_month, key=lambda k: by_month[k]["km"])
     peak_week = max(by_week, key=lambda k: by_week[k])
-    biggest_year = max(years, key=lambda y: y["km"])
     fastest_year = min((y for y in years if y["pace_s"]), key=lambda y: y["pace_s"])
 
     region_counter = Counter(t for r in runs if (t := place_token(r.name)))
