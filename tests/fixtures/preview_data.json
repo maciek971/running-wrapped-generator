@@ -1,0 +1,25 @@
+{
+  "lifetime": {"runs": 612, "km": 3421, "hours": 342, "years": 6, "first": "2019-03-01", "last": "2024-12-20", "cities": 8, "earth_pct": 8.5},
+  "geo": {"home_city": "Wrocław", "country": "Polska", "country_flag": "🇵🇱"},
+  "years": [{"year": 2023, "km": 520, "pace": "5:50", "pace_s": 350, "runs": 90}, {"year": 2024, "km": 700, "pace": "5:42", "pace_s": 342, "runs": 120}],
+  "months": [], "zones_by_year": [], "zone_bounds": [120, 140, 155, 170, 185],
+  "records": {
+    "longest": {"km": 22.09, "date": "2024-10-12", "name": "Półmaraton Wrocław"},
+    "race": [
+      {"key": "5k", "label": "5 km", "time": "25:36", "pace": "5:07", "pred": {"time": "23:56", "delta": "1:40", "faster": true}},
+      {"key": "10k", "label": "10 km", "time": "52:44", "pace": "5:16", "pred": {"time": "50:51", "delta": "1:53", "faster": true}},
+      {"key": "half", "label": "½ maraton", "time": "1:54:25", "pace": "5:25", "pred": {"time": "1:53:16", "delta": "1:09", "faster": true}}
+    ],
+    "sprint": [
+      {"key": "1k", "label": "1 km", "time": "4:19", "pace": "4:20"},
+      {"key": "mile", "label": "Mila", "time": "7:19", "pace": "4:33"}
+    ],
+    "marathon": {"time": "4:08:57"},
+    "totals": {"km": 3421, "runs": 612},
+    "peak_week": {"km": 71.0, "week": "2024-W23"},
+    "fastest_year": {"year": 2024, "pace": "5:42"}
+  },
+  "regions": [], "poland": null, "weekday": [0,0,0,0,0,0,0], "hours": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  "dist_hist": [], "moon": [], "fav_moon": "", "zodiac": [], "strongest_sign": null,
+  "maps": [], "scale": {"ascent_m": 0, "peaks": [], "distance": {"closest": null, "cities": []}, "countries": [], "weekday": [0,0,0,0,0,0,0], "hours": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}
+}

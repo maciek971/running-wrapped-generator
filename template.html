@@ -98,13 +98,39 @@
   .line-path{stroke-dasharray:2600;stroke-dashoffset:2600;transition:stroke-dashoffset 1.6s ease}
   .in .line-path{stroke-dashoffset:0}
 
-  /* records */
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:34px}
-  .card{background:var(--ink2);border:1px solid var(--line);border-radius:18px;padding:24px;position:relative;overflow:hidden}
-  .card::after{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--grad)}
-  .card .big{font-family:'Anton';font-size:clamp(30px,4vw,46px);line-height:1;margin:4px 0 6px}
-  .card .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.14em}
-  .card .sub{font-size:14px;color:var(--cream);opacity:.7;margin-top:4px}
+  /* records — v3 */
+  .rec-hero{background:var(--ink2);border:1px solid var(--line);border-radius:18px;padding:22px 24px;
+    position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+  .rec-hero::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--grad)}
+  .rec-hero .num{font-family:'Anton';font-size:clamp(40px,7vw,62px);line-height:.9;
+    color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+  .rec-hero .num .u{font-size:.45em}
+  .rec-lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.13em;font-weight:600;
+    display:inline-flex;align-items:center;gap:6px}
+  .rec-lbl svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+  .rec-cap{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin:18px 0 9px}
+  .rec-race{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .rtile{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .rtile .t{font-family:'Anton';font-size:clamp(22px,3.4vw,28px);line-height:.9;margin-top:8px}
+  .rtile .pace{color:var(--muted);font-size:11px;margin-top:4px}
+  .rtile .pred{display:flex;align-items:center;gap:6px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+  .rtile .pred .pv{color:var(--cream);opacity:.55;font-size:12px}
+  .rtile .pred .d{margin-left:auto;font-size:11px;font-weight:700;
+    color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+  .rtile .pred svg{width:13px;height:13px;stroke:var(--a2);fill:none;stroke-width:2}
+  .rec-sprint{display:flex;gap:8px;margin-top:8px}
+  .rec-sprint .rtile{flex:1;display:flex;align-items:baseline;gap:10px;padding:12px 16px}
+  .rec-sprint .t{margin:0;font-size:21px}
+  .rec-sprint .pace{margin:0 0 0 auto}
+  .rec-goal{display:flex;align-items:center;gap:8px;margin-top:12px;padding:11px 16px;
+    border:1px dashed var(--line);border-radius:13px;color:var(--muted);font-size:12.5px}
+  .rec-goal svg{width:15px;height:15px;stroke:var(--a1);fill:none;stroke-width:2}
+  .rec-goal .m{font-family:'Anton';font-size:20px;margin-left:auto;
+    color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
+  .rec-sup{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;margin-top:16px}
+  .rec-sup .t{font-family:'Anton';font-size:clamp(22px,3.4vw,27px);line-height:.9;margin-top:7px}
+  .rec-sup .t .u{font-size:.5em;opacity:.6}
+  .rec-sup .sub{font-size:12.5px;color:var(--cream);opacity:.6;margin-top:5px}
 
   /* "gdzie" — one zoom-out stage; a prominent tab bar switches Wrocław/Polska/Świat */
   .scene{margin-top:30px}
@@ -461,7 +487,7 @@
   <section id="records" style="order:9">
     <div class="kicker rv">Rozdział 9 — rekordy</div>
     <h2 class="rv">Tablica chwały</h2>
-    <div class="grid" id="records"></div>
+    <div id="rec-body" class="rv"></div>
   </section>
 
   <!-- FUN -->
@@ -679,23 +705,40 @@ function _shotMode(){
   },80);
 }
 
-/* ---------- records ---------- */
+/* ---------- records (v3) ---------- */
 (function(){
   const r=DATA.records;
-  const cards=[
-    {lbl:'Najdłuższy bieg',big:r.longest.km+' km',sub:r.longest.date},
-    {lbl:'Najbogatszy rok',big:Math.round(r.biggest_year.km)+' km',sub:r.biggest_year.year+' (do czerwca)'},
-    r.best_5k&&{lbl:'Rekord ~5K',big:r.best_5k.time,sub:r.best_5k.pace+'/km · '+r.best_5k.date},
-    r.best_10k&&{lbl:'Rekord ~10K',big:r.best_10k.time,sub:r.best_10k.pace+'/km · '+r.best_10k.date},
-    {lbl:'Rekordowy tydzień',big:r.peak_week.km+' km',sub:r.peak_week.week},
-    {lbl:'Najlepszy miesiąc',big:r.best_month.km+' km',sub:r.best_month.ym},
-    {lbl:'Najszybszy rok',big:r.fastest_year.pace,sub:r.fastest_year.year+' · śr. tempo/km'},
-    {lbl:'Łącznie',big:L.km.toLocaleString('pl').replace(/,/g,' ')+' km',sub:L.runs+' biegów'},
-  ].filter(Boolean);
-  $('#records').innerHTML=cards.map(c=>
-    `<div class="card rv"><div class="lbl">${c.lbl}</div><div class="big">${c.big}</div><div class="sub">${c.sub}</div></div>`
-  ).join('');
-  document.querySelectorAll('#records .rv').forEach(el=>io.observe(el));
+  const ICON={route:'<svg viewBox="0 0 24 24"><path d="M9 19a3 3 0 0 1-3-3V8a3 3 0 0 0-3-3"/><path d="M15 5a3 3 0 0 1 3 3v8a3 3 0 0 0 3 3"/><circle cx="6" cy="5" r="1.6"/><circle cx="18" cy="19" r="1.6"/></svg>',
+    flame:'<svg viewBox="0 0 24 24"><path d="M12 3c1 4 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 1 1 2 2 2 0-3-1-5 1-7z"/></svg>',
+    goal:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/></svg>'};
+  const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  let h='';
+  const lk=r.longest.km, lw=(lk%1?lk.toFixed(1):lk);
+  h+=`<div class="rec-hero">
+    <div><div class="rec-lbl">${ICON.route} Najdłuższy bieg</div>
+      <div class="sub" style="color:var(--cream);opacity:.6;font-size:12.5px;margin-top:9px">${esc(r.longest.name)} · ${esc(r.longest.date)}</div></div>
+    <div class="num">${String(lw).split('.')[0]}<span class="u">${lw%1?'.'+String(lw).split('.')[1]:''} km</span></div></div>`;
+
+  if(r.race.length){
+    h+='<div class="rec-cap">Rekordy wyścigowe · rekord vs forma dziś (Garmin)</div><div class="rec-race">';
+    h+=r.race.map(d=>`<div class="rtile"><div class="rec-lbl">${esc(d.label)}</div>
+      <div class="t">${d.time}</div><div class="pace">${d.pace} / km</div>`+
+      (d.pred?`<div class="pred">${ICON.flame}<span class="pv">prognoza ${d.pred.time}</span><span class="d">${d.pred.faster?'−':'+'}${d.pred.delta}</span></div>`:'')+
+      `</div>`).join('');
+    h+='</div>';
+  }
+  if(r.sprint.length){
+    h+='<div class="rec-sprint">'+r.sprint.map(d=>`<div class="rtile"><div class="rec-lbl">${esc(d.label)}</div><div class="t">${d.time}</div><div class="pace">${d.pace}/km</div></div>`).join('')+'</div>';
+  }
+  if(r.marathon){
+    h+=`<div class="rec-goal">${ICON.goal}<span>Następny cel wg Twojej formy — <span style="color:var(--cream)">maraton</span> (prognoza)</span><span class="m">${r.marathon.time}</span></div>`;
+  }
+  const km=n=>n.toLocaleString('pl').replace(/,/g,' ');
+  h+=`<div class="rec-sup">
+    <div class="rtile"><div class="rec-lbl">Łącznie</div><div class="t">${km(r.totals.km)}<span class="u"> km</span></div><div class="sub">${km(r.totals.runs)} biegów</div></div>
+    <div class="rtile"><div class="rec-lbl">Rekord. tydzień</div><div class="t">${r.peak_week.km}<span class="u"> km</span></div></div>
+    <div class="rtile"><div class="rec-lbl">Najszybszy rok</div><div class="t">${r.fastest_year.pace}</div><div class="sub">${r.fastest_year.year}</div></div></div>`;
+  $('#rec-body').innerHTML=h;
 })();
 
 /* ---------- generic mini-bars (weekday / hours / distance) ---------- */
