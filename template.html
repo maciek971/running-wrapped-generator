@@ -17,6 +17,13 @@
     --a1:#FFB037; --a2:#FF5E5B; --a3:#D7376B;
     --z1:#3E92CC; --z2:#2BAA7F; --z3:#F2C94C; --z4:#F2994A; --z5:#E5484D;
     --grad:linear-gradient(100deg,var(--a1),var(--a2) 55%,var(--a3));
+    /* ── structural tokens ─ single source of truth for spacing/radii/type ──
+       4px-based scale (adapted from a Fitness & Wellness token set). Theme colours
+       stay above; these replace ad-hoc literals so spacing/radius/line-height stay
+       consistent. Off-scale legacy spacings migrate to --sp-* incrementally. */
+    --sp-xs:4px; --sp-sm:8px; --sp-md:16px; --sp-lg:24px; --sp-xl:32px; --sp-2xl:48px; --sp-3xl:64px; --sp-4xl:96px;
+    --r-sm:6px; --r-md:12px; --r-lg:16px; --r-xl:24px; --r-full:9999px;
+    --lh-head:1.06; --lh-display:1.08;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -41,7 +48,7 @@
 
   .kicker{font-family:'Anton';letter-spacing:.22em;text-transform:uppercase;font-size:13px;
     color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text;margin-bottom:18px}
-  h2{font-family:'Anton';font-weight:400;font-size:clamp(34px,6vw,68px);line-height:1.06;
+  h2{font-family:'Anton';font-weight:400;font-size:clamp(34px,6vw,68px);line-height:var(--lh-head);
     text-transform:uppercase;letter-spacing:.01em;margin-bottom:10px}
   .lead{color:var(--muted);font-size:clamp(16px,1.8vw,19px);max-width:60ch}
   .lead b{color:var(--cream);font-weight:600}
@@ -71,7 +78,7 @@
   /* only .fill is in normal flow, so its % height is exact (labels are absolute,
      otherwise flexbox shrinks tall bars and 704/799 collapse to the same height) */
   .bar{flex:1;height:100%;position:relative;display:flex;flex-direction:column;justify-content:flex-end}
-  .bar .fill{position:relative;width:100%;border-radius:6px 6px 0 0;height:0;
+  .bar .fill{position:relative;width:100%;border-radius:var(--r-sm) var(--r-sm) 0 0;height:0;
     transition:height 1s cubic-bezier(.2,.8,.2,1);background:var(--grad);opacity:.42}
   .bar.hot .fill{opacity:1;box-shadow:0 0 22px rgba(255,94,91,.35)}
   .bar .v{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:7px;
@@ -82,14 +89,14 @@
   .in .bar .v{opacity:.9}
 
   .stack-row{display:flex;align-items:flex-end;gap:clamp(4px,1vw,12px);height:260px}
-  .stack{flex:1;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden;
+  .stack{flex:1;display:flex;flex-direction:column-reverse;border-radius:var(--r-sm) var(--r-sm) 0 0;overflow:hidden;
     height:0;transition:height 1s cubic-bezier(.2,.8,.2,1)}
   .seg{width:100%}
-  .stack-lbl{display:flex;gap:clamp(4px,1vw,12px);margin-top:8px}
+  .stack-lbl{display:flex;gap:clamp(4px,1vw,12px);margin-top:var(--sp-sm)}
   .stack-lbl .yr{flex:1;text-align:center;color:var(--muted);font-size:11px}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:18px;font-size:13px;color:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:var(--sp-md);margin-top:18px;font-size:13px;color:var(--muted)}
   .legend span{display:flex;align-items:center;gap:7px}
-  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .dot{width:11px;height:11px;border-radius:var(--r-sm);display:inline-block}
 
   .area-wrap{position:relative;margin-top:30px}
   svg{display:block;width:100%;overflow:visible}
@@ -100,8 +107,8 @@
 
   /* records — v3 */
   #rec-body{margin-top:22px}
-  .rec-hero{background:var(--ink2);border:1px solid var(--line);border-radius:24px;padding:24px 26px;
-    position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+  .rec-hero{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-xl);padding:24px 26px;
+    position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--sp-md)}
   .rec-hero::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--grad)}
   .rec-hero .num{font-family:'Anton';font-size:clamp(40px,7vw,62px);line-height:.9;
     color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
@@ -110,25 +117,25 @@
     display:inline-flex;align-items:center;gap:6px}
   .rec-lbl svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
   .rec-cap{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin:18px 0 9px}
-  .rec-race{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .rtile{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
-  .rtile .t{font-family:'Anton';font-size:clamp(22px,3.4vw,28px);line-height:.9;margin-top:8px}
+  .rec-race{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-sm)}
+  .rtile{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-md);min-width:0}
+  .rtile .t{font-family:'Anton';font-size:clamp(22px,3.4vw,28px);line-height:.9;margin-top:var(--sp-sm)}
   .rtile .pace{color:var(--muted);font-size:11px;margin-top:4px}
   .rtile .pred{display:flex;align-items:center;gap:6px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
   .rtile .pred .pv{color:var(--cream);opacity:.55;font-size:12px}
   .rtile .pred .d{margin-left:auto;font-size:11px;font-weight:700;
     color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
   .rtile .pred svg{width:13px;height:13px;stroke:var(--a2);fill:none;stroke-width:2}
-  .rec-sprint{display:flex;gap:8px;margin-top:8px}
+  .rec-sprint{display:flex;gap:var(--sp-sm);margin-top:var(--sp-sm)}
   .rec-sprint .rtile{flex:1;display:flex;align-items:baseline;gap:10px;padding:12px 16px}
   .rec-sprint .t{margin:0;font-size:21px}
   .rec-sprint .pace{margin:0 0 0 auto}
-  .rec-goal{display:flex;align-items:center;gap:8px;margin-top:12px;padding:11px 16px;
-    border:1px dashed var(--line);border-radius:13px;color:var(--muted);font-size:12.5px}
+  .rec-goal{display:flex;align-items:center;gap:var(--sp-sm);margin-top:12px;padding:11px 16px;
+    border:1px dashed var(--line);border-radius:var(--r-md);color:var(--muted);font-size:12.5px}
   .rec-goal svg{width:15px;height:15px;stroke:var(--a1);fill:none;stroke-width:2}
   .rec-goal .m{font-family:'Anton';font-size:20px;margin-left:auto;
     color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
-  .rec-sup{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;margin-top:16px}
+  .rec-sup{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:var(--sp-sm);margin-top:var(--sp-md)}
   .rec-sup .t{font-family:'Anton';font-size:clamp(22px,3.4vw,27px);line-height:.9;margin-top:7px}
   .rec-sup .t .u{font-size:.5em;opacity:.6}
   .rec-sup .sub{font-size:12.5px;color:var(--cream);opacity:.6;margin-top:5px}
@@ -149,11 +156,11 @@
   .scene-hint .pts{font-size:14px}
   /* the segmented control — each tab reads as a real button (bg+border), active = gradient */
   .lvltabs{display:inline-flex;background:var(--ink);border:1px solid var(--line);
-    border-radius:999px;padding:5px;gap:5px;width:max-content;max-width:100%}
+    border-radius:var(--r-full);padding:5px;gap:5px;width:max-content;max-width:100%}
   .lvltab{appearance:none;-webkit-appearance:none;cursor:pointer;border:1px solid var(--line);
     background:rgba(255,255,255,.05);color:var(--cream);font-family:'Hanken Grotesk',sans-serif;
-    font-size:15px;font-weight:600;padding:11px 20px;border-radius:999px;display:flex;align-items:center;
-    gap:8px;white-space:nowrap;touch-action:manipulation;
+    font-size:15px;font-weight:600;padding:11px 20px;border-radius:var(--r-full);display:flex;align-items:center;
+    gap:var(--sp-sm);white-space:nowrap;touch-action:manipulation;
     transition:background .2s ease,color .2s ease,transform .12s ease,box-shadow .2s ease}
   .lvltab .e{font-size:17px;line-height:1}
   .lvltab:hover{background:rgba(255,255,255,.12)}
@@ -180,7 +187,7 @@
     transition:opacity .4s ease,transform .42s cubic-bezier(.2,.8,.2,1)}
   .lvl.on{opacity:1;visibility:visible;transform:none}
   /* level 1 — Wrocław home card */
-  .homecard{background:var(--ink2);border:1px solid var(--line);border-radius:18px;
+  .homecard{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);
     padding:26px 28px;position:relative;overflow:hidden}
   .homecard::after{content:'';position:absolute;right:-50px;top:-50px;width:240px;height:240px;
     background:radial-gradient(circle,rgba(255,176,55,.16),transparent 70%);pointer-events:none}
@@ -209,12 +216,12 @@
   }
 
   /* route-art map carousel */
-  .carousel{position:relative;margin-top:32px}
+  .carousel{position:relative;margin-top:var(--sp-xl)}
   .stage{position:relative}  /* wraps slides+controls so buttons centre on the MAP, not the dots */
   /* slides are STACKED (absolute), not horizontally scrolled — a scroll
      container desyncs Leaflet's route overlay from the tiles. */
   .slides{position:relative;aspect-ratio:16/10;border:1px solid var(--line);
-    border-radius:20px;overflow:hidden;background:#0c0c11;touch-action:pan-y}
+    border-radius:var(--r-xl);overflow:hidden;background:#0c0c11;touch-action:pan-y}
   .slides:focus-visible{outline:2px solid var(--a1);outline-offset:3px}
   .slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .4s ease}
   .slide.active{opacity:1;visibility:visible}
@@ -248,7 +255,7 @@
   .counter{position:absolute;top:12px;right:12px;z-index:600;pointer-events:none;
     font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;letter-spacing:.04em;
     color:#fff;background:rgba(10,10,16,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-    border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 12px;
+    border:1px solid rgba(255,255,255,.28);border-radius:var(--r-full);padding:5px 12px;
     box-shadow:0 4px 14px rgba(0,0,0,.5)}
   .counter b{color:var(--a1)}
   /* dot indicator — visible, with 44px-tall tap areas */
@@ -259,8 +266,8 @@
   .dots button i{display:block;width:9px;height:9px;border-radius:50%;
     background:rgba(245,239,230,.34);transition:all .3s ease}
   .dots button:hover i{background:rgba(245,239,230,.65)}
-  .dots button.on i{background:var(--a2);width:26px;border-radius:5px}
-  .dots button:focus-visible{outline:2px solid var(--a1);outline-offset:2px;border-radius:10px}
+  .dots button.on i{background:var(--a2);width:26px;border-radius:var(--r-sm)}
+  .dots button:focus-visible{outline:2px solid var(--a1);outline-offset:2px;border-radius:var(--r-md)}
   @media(max-width:560px){
     .slides{aspect-ratio:1/1}        /* taller map on portrait phones */
     .cbtn{width:44px;height:44px}
@@ -274,18 +281,18 @@
   /* country chips */
   .countries{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
   .country{display:flex;align-items:center;gap:10px;background:var(--ink2);border:1px solid var(--line);
-    border-radius:14px;padding:12px 16px}
+    border-radius:var(--r-md);padding:12px 16px}
   .country.foreign{border-color:rgba(255,176,55,.5);box-shadow:0 0 20px rgba(255,176,55,.12)}
   .country .fl{font-size:24px}
   .country .nm{font-weight:600}
   .country .rn{font-family:'Anton';color:var(--muted);font-size:13px}
 
   /* hour radar chart */
-  .hourchart{margin-top:24px;display:flex;justify-content:center}
+  .hourchart{margin-top:var(--sp-lg);display:flex;justify-content:center}
   .hourchart svg{width:100%;max-width:340px;height:auto;display:block}
 
   /* scale / perspective boxes */
-  .scalebox{background:var(--ink2);border:1px solid var(--line);border-radius:20px;padding:28px;
+  .scalebox{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-xl);padding:28px;
     position:relative;overflow:hidden}
   .scalebox::after{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--grad)}
   .scalebox .huge{font-family:'Anton';font-size:clamp(42px,7vw,76px);line-height:.88;margin:6px 0 4px;
@@ -302,7 +309,7 @@
   .bars .b{flex:1;height:100%;position:relative;display:flex;flex-direction:column;justify-content:flex-end}
   /* only .f is in normal flow, so its % height resolves exactly; the labels are
      absolute — otherwise flexbox shrinks every bar to the same residual height */
-  .bars .b .f{position:relative;width:100%;height:0;border-radius:5px 5px 0 0;background:var(--grad);opacity:.48;
+  .bars .b .f{position:relative;width:100%;height:0;border-radius:var(--r-sm) var(--r-sm) 0 0;background:var(--grad);opacity:.48;
     transition:height .9s cubic-bezier(.2,.8,.2,1)}
   .bars .b.hot .f{opacity:1;box-shadow:0 0 18px rgba(255,94,91,.4)}
   .bars .b .bv{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:6px;
@@ -316,7 +323,7 @@
 
   /* moon cards + zodiac */
   .moons{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
-  .moon{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center}
+  .moon{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;text-align:center}
   .moon.best{border-color:var(--a1);box-shadow:0 0 26px rgba(255,176,55,.18)}
   .moon .ph{font-size:30px}.moon .nm{font-size:13px;color:var(--muted);margin:6px 0 10px}
   .moon .pc{font-family:'Anton';font-size:26px}.moon .rn{font-size:12px;color:var(--muted)}
@@ -325,7 +332,7 @@
      the base .moon rules so these win at equal specificity; min-width:0 keeps the
      four 1fr columns equal instead of long names blowing out their track. */
   @media(max-width:640px){
-    .moons{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:24px}
+    .moons{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:var(--sp-lg)}
     .moon{background:transparent;border:0;border-radius:0;padding:6px 2px;box-shadow:none;min-width:0;overflow-wrap:anywhere}
     .moon.best{background:transparent;border:0;box-shadow:none}
     .moon.best .pc{color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
@@ -337,17 +344,17 @@
   .zod{margin-top:26px;display:flex;flex-direction:column;gap:9px}
   .zrow{display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:14px}
   .zrow.king .zn{color:var(--a1)}
-  .zrow .zn{font-weight:600}.zrow .ztrack{height:12px;background:var(--ink2);border-radius:6px;overflow:hidden}
-  .zrow .zf{height:100%;width:0;background:var(--grad);border-radius:6px;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+  .zrow .zn{font-weight:600}.zrow .ztrack{height:12px;background:var(--ink2);border-radius:var(--r-sm);overflow:hidden}
+  .zrow .zf{height:100%;width:0;background:var(--grad);border-radius:var(--r-sm);transition:width 1s cubic-bezier(.2,.8,.2,1)}
   .zrow .zp{font-family:'Anton';font-size:13px;text-align:right;color:var(--muted)}
-  .disclaim{color:var(--muted);font-size:13px;font-style:italic;margin-top:8px}
+  .disclaim{color:var(--muted);font-size:13px;font-style:italic;margin-top:var(--sp-sm)}
 
   /* educational annotation */
   .edu{margin-top:26px;border-left:2px solid;border-image:var(--grad) 1;padding:8px 0 8px 18px;
     color:var(--muted);font-size:14.5px;max-width:62ch}
   .edu b{color:var(--a1);font-weight:600}
 
-  .outro h2{font-size:clamp(40px,9vw,110px);line-height:1.08}
+  .outro h2{font-size:clamp(40px,9vw,110px);line-height:var(--lh-display)}
   .outro .lead{font-size:clamp(17px,2.4vw,24px);margin-top:14px}
   footer{padding:40px 0 70px;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
   a{color:var(--a1);text-decoration:none;border-bottom:1px solid rgba(255,176,55,.4)}
