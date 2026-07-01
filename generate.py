@@ -279,12 +279,20 @@ def main():
 
     garmin_runs = load_runs(cache)
     strava_runs = load_strava(cache)
+    # Data source — me.json "source": "garmin" | "strava" | "both" (default "both").
+    # "both" merges + de-dups (preferring the Garmin original). Set to one source to
+    # pin it; this is re-runnable, so you can switch and regenerate without refetching.
+    source = str(cfg.get("source") or "both").lower()
+    if source == "garmin":
+        strava_runs = []
+    elif source == "strava":
+        garmin_runs = []
     runs = merge_runs(garmin_runs, strava_runs)
     if not runs:
         sys.exit("No running activities found. Run fetch_garmin.py and/or ingest "
                  "Strava via the MCP (see CLAUDE.md).")
     dups = len(garmin_runs) + len(strava_runs) - len(runs)
-    print(f"  · sources: {len(garmin_runs)} Garmin + {len(strava_runs)} Strava, "
+    print(f"  · source={source}: {len(garmin_runs)} Garmin + {len(strava_runs)} Strava, "
           f"{dups} dups → {len(runs)} runs")
     rec_path = cache / "records.json"
     rec_json = json.loads(rec_path.read_text()) if rec_path.exists() else None
