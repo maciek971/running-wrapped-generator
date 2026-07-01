@@ -2,5 +2,6 @@
   "birth_year": 1990,
   "resting_hr": 48,
   "lang": "pl",
-  "home_city": null
+  "home_city": null,
+  "source": "both"
 }

@@ -88,9 +88,9 @@ through the connected Strava MCP (read-only):
   ```
   then record `{id:{name,start_time}}` in `cache/strava/manifest.json` so re-runs
   only fetch new activities.
-- `generate.py` merges Garmin + Strava automatically and **deduplicates** runs
-  that appear in both (matched by start time ±5 min + distance), preferring the
-  Garmin original. Nothing else to do — just run `python generate.py`.
+- `generate.py` merges Garmin + Strava and **deduplicates** runs that appear in
+  both (matched by start time ±5 min + distance), preferring the Garmin original —
+  unless `me.json → "source"` pins one source (see step 2b). Just run `python generate.py`.
 - If no Strava MCP is connected, skip this; everything stays Garmin-only.
 
 **2. Config** — `me.json` is mostly **auto-filled from Garmin** in step 1 (birth year,
@@ -99,6 +99,16 @@ Just:
 - set `lang` (default `pl`), leave `home_city` as `null` (auto-detected).
 - only **ask the user** for `birth_year` / `resting_hr` if step 1 couldn't fetch them
   (e.g. profile private) — otherwise don't bother them.
+
+**2b. Data source — Garmin, Strava, or both (ask only if both exist).**
+This decides what feeds the page, via `me.json → "source"`: `"garmin"`, `"strava"`,
+or `"both"` (default — merge + dedup, preferring the Garmin original). Decide it
+**before generating** (it changes the data) so it's fixed before colours/story:
+- Only **Garmin** available (no Strava MCP) → set `"garmin"`; don't ask.
+- Only **Strava** available (no Garmin) → set `"strava"`; don't ask.
+- **Both** available → **ask the user which to use** (Garmin only / Strava only /
+  both merged) and set `"source"`. Re-runnable: switch the value and re-run
+  `generate.py` — no refetch needed.
 
 **3. Generate**
 ```
