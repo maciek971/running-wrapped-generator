@@ -14,7 +14,9 @@
   :root{
     --ink:#0b0b0f; --ink2:#15151d; --line:#26262f;
     --cream:#f5efe6; --muted:#8c8c9c;
-    --a1:#FFB037; --a2:#FF5E5B; --a3:#D7376B;
+    /* THEME - INITIALIZE (CLAUDE.md step 4): replace these 3 accent stops
+       (light -> mid -> deep) with colours that fit THIS runner. Neutral defaults below. */
+    --a1:#C2CAD6; --a2:#8B94A6; --a3:#6B7686;
     --z1:#3E92CC; --z2:#2BAA7F; --z3:#F2C94C; --z4:#F2994A; --z5:#E5484D;
     --grad:linear-gradient(100deg,var(--a1),var(--a2) 55%,var(--a3));
     /* ── structural tokens ─ single source of truth for spacing/radii/type ──
@@ -365,9 +367,20 @@
 <div class="glow g1"></div><div class="glow g2"></div>
 <main>
 
+  <!-- ================= INITIALIZE THIS PAGE (see CLAUDE.md) =================
+       This template ships NEUTRAL. Before showing it to the runner:
+         1. THEME  -> set --a1/--a2/--a3 in :root (step 4).
+         2. STORY  -> rewrite every .kicker, <h2>, .lead, .edu and the outro
+                      around THIS runner's spine, from data.json + insights.json
+                      + the interview (step 5). Reorder chapters via style="order:N"
+                      and hide ones that say nothing (style="display:none").
+       KEEP every dynamic hook intact: [data-km] spans, <span id="..."> placeholders,
+       chart-container ids and the section structure. Numbers stay live on refresh.
+       ======================================================================= -->
+
   <!-- HERO -->
   <section class="hero" style="order:0">
-    <div class="kicker rv">Running Wrapped · 2014 — 2026</div>
+    <div class="kicker rv">Running Wrapped</div>
     <div class="bignum rv d1"><span id="km">0</span><span class="unit">km</span></div>
     <div class="substats">
       <div class="s rv d2"><div class="n" id="runs">0</div><div class="l">biegów</div></div>
@@ -382,20 +395,16 @@
   <section id="climb" style="order:1">
     <div class="kicker rv">Rozdział 1 — wspinaczka</div>
     <h2 class="rv">Rok po roku,<br>kilometr po kilometrze</h2>
-    <p class="lead rv d1">Zaczęło się w <b>2014</b> od <span data-km="2014">217</span> km. Dwanaście lat później rok <b>2026</b> ma już
-      <b><span data-km="2026">856</span> km</b> — i to dopiero <span id="c-when">koniec czerwca</span>. Pomiędzy: lata słabsze i mocniejsze, ale trend jest jeden.</p>
+    <p class="lead rv d1">Każdy słupek to jeden rok. Zobacz, jak Twój roczny wolumen rośnie albo faluje sezon po sezonie — i jaki rysuje się z tego trend.</p>
     <div class="chart bar-row" id="yearBars"></div>
-    <div class="edu rv">📈 <b>Konsekwencja się kumuluje.</b> Nie chodzi o jeden genialny tydzień — sumę robią
-      lata powtarzalności. Skok 2024→2026 (<span data-km="2024">390</span> → <span data-km="2025">704</span> → <span data-km="2026">856</span> km) to efekt regularności, nie cudu.</div>
+    <div class="edu rv">📈 <b>Konsekwencja się kumuluje.</b> Nie chodzi o jeden genialny tydzień — sumę robią lata powtarzalności.</div>
   </section>
 
   <!-- MONTHLY AREA -->
   <section id="explosion" style="order:2">
     <div class="kicker rv">Rozdział 2 — eksplozja</div>
-    <h2 class="rv">88 miesięcy biegania</h2>
-    <p class="lead rv d1">Każdy słupek to miesiąc. Pierwsze 9 lat to fale przypływów i odpływów.
-      Od <b>2024</b> krzywa przestaje opadać — miesięczny wolumen rośnie z ~40 km do
-      <b>ponad 170 km</b> w szczycie.</p>
+    <h2 class="rv">Miesiąc po miesiącu</h2>
+    <p class="lead rv d1">Każdy słupek to miesiąc. Fale przypływów i odpływów — a gdzieś na tej krzywej moment, w którym bieganie przestaje wracać do zera.</p>
     <div class="area-wrap rv"><svg id="monthArea" viewBox="0 0 1000 280" preserveAspectRatio="none"></svg></div>
     <div class="edu rv">🌊 <b>Od „czasem biegam" do „jestem biegaczem".</b> Przełom to nie pojedynczy
       trening, tylko moment, w którym wykres przestał wracać do zera.</div>
@@ -404,25 +413,19 @@
   <!-- ZONES -->
   <section id="zones" style="order:7">
     <div class="kicker rv">Rozdział 7 — jak trenujesz</div>
-    <h2 class="rv">Nauka biegania<br>na luzie</h2>
-    <p class="lead rv d1">Rozkład czasu w strefach tętna, rok po roku (od 2018, odkąd jest HR).
-      Przez lata dominowała <b>Z4 — mocno</b>. W <b>2026</b> wszystko się przewraca:
-      <b><span id="z-easy">56</span>% czasu w Z1+Z2</b>, czyli spokojnie.</p>
+    <h2 class="rv">Strefy tętna,<br>rok po roku</h2>
+    <p class="lead rv d1">Rozkład czasu w strefach tętna, rok po roku (odkąd zegarek zapisuje HR). W ostatnim roku <b><span id="z-easy">–</span>% czasu</b> spędzasz w Z1+Z2, czyli spokojnie.</p>
     <div class="chart stack-row" id="zoneStack"></div>
     <div class="stack-lbl" id="zoneYears"></div>
     <div class="legend" id="zoneLegend"></div>
-    <div class="edu rv">❤️ <b>Trening spolaryzowany.</b> Większość kilometrów wolno (Z1/Z2), tylko
-      odrobina naprawdę mocno (Z4/Z5). Buduje bazę tlenową bez ciągłego zmęczenia — i właśnie
-      dlatego w 2026 biegasz <b>dwa razy więcej</b> przy <b>niższym średnim tętnie</b>.</div>
+    <div class="edu rv">❤️ <b>Trening spolaryzowany.</b> Większość kilometrów wolno (Z1/Z2), tylko odrobina naprawdę mocno (Z4/Z5) — baza tlenowa bez ciągłego zmęczenia.</div>
   </section>
 
   <!-- PACE VS VOLUME -->
   <section id="speed" style="order:8">
     <div class="kicker rv">Rozdział 8 — tempo kontra wolumen</div>
     <h2 class="rv">Szybciej nie znaczy więcej</h2>
-    <p class="lead rv d1">Linia to średnie tempo w danym roku, słupki w tle — wolumen.
-      Najszybszy byłeś w <b>2017 (5:45/km)</b> przy <span data-km="2017">238</span> km. Dziś biegasz <b><span id="p-mult">3</span>× więcej</b>,
-      wolniej średnio — bo większość to spokojne kilometry.</p>
+    <p class="lead rv d1">Linia to średnie tempo w danym roku, słupki w tle — wolumen. Zwykle im więcej kilometrów, tym spokojniejsze średnie tempo. Dziś potrafisz przebiec nawet <b><span id="p-mult">–</span>× więcej</b> niż na starcie — bo większość to łatwe kilometry.</p>
     <div class="area-wrap rv"><svg id="paceChart" viewBox="0 0 1000 300"></svg></div>
     <div class="edu rv">🐢 <b>Wolne kilometry to nie strata.</b> Średnie tempo spada, gdy świadomie
       biegasz łatwo — a to ono buduje wytrzymałość pod te szybkie dni.</div>
@@ -492,25 +495,22 @@
   <!-- WHEN -->
   <section id="when" style="order:3">
     <div class="kicker rv">Rozdział 3 — kiedy</div>
-    <h2 class="rv">Biegacz świtu</h2>
-    <p class="lead rv d1">Godzina startu (czas lokalny), zsumowana przez 12 lat. Werdykt jest bezlitosny:
-      szczyt o <b>5:00 rano</b>, tuż za nim 6:00. Wieczory praktycznie nie istnieją.</p>
+    <h2 class="rv">Kiedy biegasz</h2>
+    <p class="lead rv d1">Godzina startu (czas lokalny), zsumowana przez wszystkie lata. Radar po lewej pokazuje ulubioną porę, słupki po prawej — dzień tygodnia.</p>
     <div class="two">
       <div class="rv d1"><div class="subh">Pora dnia (radar 24h — długość = liczba biegów)</div>
         <div class="hourchart" id="hourChart"></div></div>
       <div class="rv d2"><div class="subh">Dzień tygodnia</div>
         <div class="bars" id="wdBars"></div></div>
     </div>
-    <div class="edu rv">🌅 <b>Zegar biologiczny biegacza.</b> 84% Twoich startów pada między
-      5:00 a 8:00 — to nie przypadek, to nawyk. Trening przed światem.</div>
+    <div class="edu rv">🌅 <b>Rutyna pory dnia.</b> Większość biegów pada w podobnym oknie godzin — to nie przypadek, to nawyk.</div>
   </section>
 
   <!-- DISTANCE -->
   <section id="dist" style="order:4">
     <div class="kicker rv">Rozdział 4 — dystans</div>
     <h2 class="rv">Twój ulubiony<br>dystans</h2>
-    <p class="lead rv d1">Rozkład długości wszystkich biegów. Serce tkwi w przedziale
-      <b>5–7 km</b> — solidna „codzienna" dawka. Ale ogon w stronę 15+ km rośnie.</p>
+    <p class="lead rv d1">Rozkład długości wszystkich biegów — od krótkich truchtów po najdłuższe wyprawy. Gdzie mieszka Twoja „codzienna" dawka?</p>
     <div class="bars" id="distBars"></div>
   </section>
 
@@ -539,13 +539,12 @@
 
   <!-- OUTRO -->
   <section class="outro" style="order:11">
-    <div class="kicker rv">…i to dopiero czerwiec</div>
-    <h2 class="rv">Rok 2026 jest już<br>największy w historii.</h2>
-    <p class="lead rv d1"><span data-km="2026">856</span> km w pół roku, najdłuższy bieg w życiu (<span id="o-longest">22</span> km), najspokojniejsze tętno
-      i najwięcej łatwych kilometrów. Reszta sezonu dopiero przed Tobą. 🏃</p>
+    <div class="kicker rv">na koniec</div>
+    <h2 class="rv">Twoja historia<br>wciąż się pisze.</h2>
+    <p class="lead rv d1">Najdłuższy bieg w życiu (<span id="o-longest">–</span> km), tysiące kilometrów w nogach i kolejny sezon dopiero przed Tobą. 🏃</p>
   </section>
 
-  <footer class="rv" style="order:12">Running Wrapped · dane z Garmin Connect · 2014–2026</footer>
+  <footer class="rv" style="order:12">Running Wrapped · dane z Garmin Connect</footer>
 </main>
 
 <script>

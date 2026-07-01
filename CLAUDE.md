@@ -25,6 +25,12 @@ This is a **one-stop-shop**: do the preflight yourself, decide the path, and onl
 stop to ask the user for a real choice or their own login. Don't make them figure
 out setup.
 
+> **`template.html` ships as a neutral scaffold** — neutral accent colours and
+> generic prose, with an `INITIALIZE` comment at the top of `<main>`. Steps **4
+> (colours)** and **5 (story)** below are therefore **required, not optional**: the
+> page isn't done until you've themed it and authored the story for this specific
+> runner. The generic copy is a starting point to rewrite, not to ship as-is.
+
 **0. Preflight — check the environment, fix what you can**
 1. **Python 3**: `python3 --version`. If missing, tell the user how to install it for
    their OS and stop until it's there.
