@@ -41,12 +41,12 @@ it used on every run, so you always know):
   "lang": "pl",            // page language
   "home_city": null,       // null = auto-detected from GPS
   "source": "both",        // "garmin" | "strava" | "both"
-  "birth_year": 1990,      // auto-filled from Garmin if omitted
-  "resting_hr": 48,        // auto-filled from Garmin if omitted
+  "birth_year": 1986,      // auto-filled from Garmin if omitted
+  "resting_hr": 51,        // auto-filled from Garmin if omitted
 
   // --- optional: your OWN heart-rate zones (omit both for the auto estimate) ---
-  "hr_max": 190,               // your true max HR, overrides the observed/age estimate
-  "hr_zones": [138, 152, 164, 173]  // lower bpm bounds for Z2,Z3,Z4,Z5 (Z1 is below the first)
+  "hr_max": 188,               // your true max HR, overrides the observed/age estimate
+  "hr_zones": [133, 148, 161, 172]  // lower bpm bounds for Z2,Z3,Z4,Z5 (Z1 is below the first)
 }
 ```
 > `me.json` is JSON — the `//` comments above are just for illustration, remove them in your file.
