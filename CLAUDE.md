@@ -99,6 +99,10 @@ Just:
 - set `lang` (default `pl`), leave `home_city` as `null` (auto-detected).
 - only **ask the user** for `birth_year` / `resting_hr` if step 1 couldn't fetch them
   (e.g. profile private) — otherwise don't bother them.
+- *(optional)* override the HR-zone model if the runner knows their real numbers:
+  `"hr_max"` pins the true max HR (e.g. chest-strap measured, when the FIT p99 is off),
+  and `"hr_zones": [z2,z3,z4,z5]` sets the four lower bpm thresholds directly so the
+  zone chart matches zones set manually in Garmin (bypasses the Karvonen estimate).
 
 **2b. Data source — Garmin, Strava, or both (ask only if both exist).**
 This decides what feeds the page, via `me.json → "source"`: `"garmin"`, `"strava"`,

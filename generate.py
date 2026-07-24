@@ -310,11 +310,17 @@ def main():
     home_city = cfg.get("home_city") or (tokens.most_common(1)[0][0] if tokens else home_country)
     home = {"lat": lat0, "lon": lon0, "count": len(members)}
 
-    # HR zone bounds from observed max (p99) + resting
+    # HR zone bounds: custom (me.json "hr_zones") else Karvonen from max (p99) + resting.
+    # "hr_max" pins the true max HR (e.g. chest-strap measured); "hr_zones" is 4 lower
+    # bpm thresholds for Z2/Z3/Z4/Z5 to match zones set manually in Garmin.
     all_hr = sorted(h for r in runs for h in r.hr_samples)
     obs_max = all_hr[int(len(all_hr) * 0.99)] if all_hr else 0
-    max_hr = max(obs_max, 220 - (date.today().year - birth_year))
-    bounds = zone_bounds(max_hr, rest_hr)
+    max_hr = int(cfg.get("hr_max") or max(obs_max, 220 - (date.today().year - birth_year)))
+    custom_zones = cfg.get("hr_zones")
+    if custom_zones:
+        bounds = [float(b) for b in custom_zones]  # 4 thresholds -> 5 zones
+    else:
+        bounds = zone_bounds(max_hr, rest_hr)
 
     by_year = defaultdict(lambda: {"runs": 0, "km": 0.0, "sec": 0.0, "hr_sec": 0.0,
                                    "hr_wsum": 0.0, "longest": 0.0, "days": set()})
