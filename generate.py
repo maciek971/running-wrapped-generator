@@ -117,6 +117,22 @@ def zone_bounds(max_hr: float, rest_hr: float):
     return [rest_hr + p * hrr for p in (0.60, 0.70, 0.80, 0.90)]  # 4 thresholds -> 5 zones
 
 
+def resolve_zone_bounds(cfg, obs_max, birth_year, rest_hr, today_year):
+    """Pick HR max + the 4 zone thresholds, honoring me.json overrides.
+
+    - "hr_max" pins the true max HR (e.g. chest-strap measured); otherwise the max of
+      the observed p99 and the age estimate (220 - age) is used.
+    - "hr_zones" (four lower bpm thresholds for Z2..Z5) sets the bounds directly;
+      otherwise they come from Karvonen (zone_bounds) on max + resting HR.
+    Returns (max_hr, bounds, mode) with mode in {"custom", "pinned", "auto"}.
+    """
+    max_hr = int(cfg.get("hr_max") or max(obs_max, 220 - (today_year - birth_year)))
+    custom = cfg.get("hr_zones")
+    if custom:
+        return max_hr, [float(b) for b in custom], "custom"
+    return max_hr, zone_bounds(max_hr, rest_hr), "pinned" if cfg.get("hr_max") else "auto"
+
+
 def zone_seconds(run, bounds):
     out = {z: 0.0 for z in ZONES}
     hrs = run.hr_samples
@@ -315,15 +331,12 @@ def main():
     # bpm thresholds for Z2/Z3/Z4/Z5 to match zones set manually in Garmin.
     all_hr = sorted(h for r in runs for h in r.hr_samples)
     obs_max = all_hr[int(len(all_hr) * 0.99)] if all_hr else 0
-    max_hr = int(cfg.get("hr_max") or max(obs_max, 220 - (date.today().year - birth_year)))
-    custom_zones = cfg.get("hr_zones")
-    if custom_zones:
-        bounds = [float(b) for b in custom_zones]  # 4 thresholds -> 5 zones
+    max_hr, bounds, zmode = resolve_zone_bounds(cfg, obs_max, birth_year, rest_hr, date.today().year)
+    if zmode == "custom":
         print(f"  · HR zones: custom from me.json \"hr_zones\" → "
               f"lower bounds {[round(b) for b in bounds]} bpm, max {max_hr}")
     else:
-        bounds = zone_bounds(max_hr, rest_hr)
-        src = 'pinned "hr_max"' if cfg.get("hr_max") else "estimated from your data"
+        src = 'pinned "hr_max"' if zmode == "pinned" else "estimated from your data"
         print(f"  · HR zones: auto (Karvonen) — max {max_hr} ({src}) + resting {round(rest_hr)}. "
               f"Set \"hr_max\"/\"hr_zones\" in me.json to use your own.")
 
