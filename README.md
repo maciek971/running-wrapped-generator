@@ -26,6 +26,31 @@ open index.html
 ```
 Or just `./make.sh` (fetch + generate). Re-run anytime to refresh.
 
+## Config (`me.json`)
+Copy `me.example.json` → `me.json`. `birth_year` + `resting_hr` are auto-filled from your
+Garmin profile on the first fetch, so the minimal config is just `lang` / `source`.
+
+**Heart-rate zones** default to a **Karvonen estimate** (from your max + resting HR) — this
+works out of the box, nothing to set. If you *know* your real numbers (e.g. a chest-strap
+max, or the zones you set in Garmin), add the optional fields below for accurate zones;
+otherwise leave them out and you'll get the auto-estimate (`generate.py` prints which mode
+it used on every run, so you always know):
+
+```jsonc
+{
+  "lang": "pl",            // page language
+  "home_city": null,       // null = auto-detected from GPS
+  "source": "both",        // "garmin" | "strava" | "both"
+  "birth_year": 1990,      // auto-filled from Garmin if omitted
+  "resting_hr": 48,        // auto-filled from Garmin if omitted
+
+  // --- optional: your OWN heart-rate zones (omit both for the auto estimate) ---
+  "hr_max": 190,               // your true max HR, overrides the observed/age estimate
+  "hr_zones": [138, 152, 164, 173]  // lower bpm bounds for Z2,Z3,Z4,Z5 (Z1 is below the first)
+}
+```
+> `me.json` is JSON — the `//` comments above are just for illustration, remove them in your file.
+
 ## What it never does
 - It never asks Claude to type your Garmin password — **you** authenticate.
 - Your data stays local. Publishing to GitHub Pages is optional and makes the page
