@@ -1,0 +1,109 @@
+# Daily auto-refresh for your Running Wrapped — TEMPLATE (do not run from this repo).
+#
+# Copy this into your OWN PRIVATE pipeline repo as `.github/workflows/daily.yml`,
+# then replace every <PLACEHOLDER>. Full setup: ../../docs/auto-refresh.md
+#
+# How it works: your private repo holds only personal data (me.json, your
+# customized template.html, cache/). This job checks out the public engine,
+# overlays your data on top, fetches new Garmin activities, regenerates
+# index.html, and publishes ONLY index.html to your public GitHub Pages repo.
+# The raw FIT/GPS cache never leaves the private repo.
+
+name: Daily Running Wrapped refresh
+
+on:
+  schedule:
+    # Cron is UTC. e.g. 10:00 UTC ≈ 12:00 Europe/Warsaw (summer) / 11:00 (winter).
+    - cron: "0 10 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write            # to commit the refreshed cache back to this private repo
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout personal data (this repo)
+        uses: actions/checkout@v4
+
+      - name: Checkout engine code (the public generator)
+        uses: actions/checkout@v4
+        with:
+          # The upstream tool, or your own fork of it:
+          repository: <ENGINE_OWNER>/running-wrapped-generator
+          ref: main
+          path: .engine
+
+      - name: Overlay engine onto personal data
+        run: |
+          # Bring the engine's code + neutral assets alongside your me.json /
+          # template.html / cache (which stay untouched and win).
+          cp .engine/*.py .
+          cp -r .engine/assets .
+          cp .engine/requirements.txt .
+          rm -rf .engine
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore Garmin tokens
+        env:
+          GARMIN_TOKENS: ${{ secrets.GARMIN_TOKENS }}
+        run: |
+          mkdir -p "$HOME/.garminconnect"
+          printf '%s' "$GARMIN_TOKENS" | base64 -d > "$HOME/.garminconnect/garmin_tokens.json"
+
+      - name: Fetch new activities + generate index.html
+        env:
+          # Optional fallback — only used if the saved token has expired.
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: |
+          python fetch_garmin.py
+          python generate.py
+          test -s index.html || { echo "index.html was not generated"; exit 1; }
+
+      - name: Persist refreshed cache back to this repo
+        run: |
+          git config user.name "wrapped-bot"
+          git config user.email "wrapped-bot@users.noreply.github.com"
+          git add -A cache me.json
+          if git diff --cached --quiet; then
+            echo "No new activities — cache unchanged."
+          else
+            git commit -m "chore: refresh cache $(date -u +%F)"
+            git push
+          fi
+
+      - name: Publish index.html to the public Pages repo
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          ssh-keyscan -t ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
+          rm -rf /tmp/pages
+          GIT_SSH_COMMAND="ssh -i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes" \
+            git clone git@github.com:<YOUR_GH_USER>/<YOUR_PAGES_REPO>.git /tmp/pages
+          cp index.html /tmp/pages/index.html
+          cd /tmp/pages
+          git config user.name "wrapped-bot"
+          git config user.email "wrapped-bot@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Published page already up to date."
+          else
+            git commit -m "Refresh Running Wrapped $(date -u +%F)"
+            GIT_SSH_COMMAND="ssh -i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes" git push
+          fi

@@ -113,7 +113,8 @@ Give them `https://<user>.github.io/<repo>/`.
 
 ## Refreshing later
 `./make.sh` re-fetches + regenerates. Inline numbers/dates update themselves; only hand-written
-year-specific *wording* may need a glance at year rollover.
+year-specific *wording* may need a glance at year rollover. For a hands-off page that refreshes
+itself daily via GitHub Actions, see [`docs/auto-refresh.md`](docs/auto-refresh.md).
 
 ## Where things live
 - `template.html` — the page (theme `:root` vars + all prose). **Edit here**, not `index.html` (generated/overwritten).
