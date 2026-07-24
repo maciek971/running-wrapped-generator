@@ -26,6 +26,13 @@ open index.html
 ```
 Or just `./make.sh` (fetch + generate). Re-run anytime to refresh.
 
+## Auto-refresh (advanced, optional)
+Want a page that **updates itself daily** from Garmin, with no local machine involved? See
+[`docs/auto-refresh.md`](docs/auto-refresh.md) for the self-hosting pattern: a private repo
+holds your data + a GitHub Actions workflow, pulls this engine fresh each day, and publishes
+only `index.html` to a public Pages repo (raw GPS stays private). A ready-to-copy workflow is
+in [`examples/github-actions/daily-refresh.yml`](examples/github-actions/daily-refresh.yml).
+
 ## Config (`me.json`)
 Copy `me.example.json` → `me.json`. `birth_year` + `resting_hr` are auto-filled from your
 Garmin profile on the first fetch, so the minimal config is just `lang` / `source`.
