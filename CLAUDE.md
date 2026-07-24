@@ -99,10 +99,17 @@ Just:
 - set `lang` (default `pl`), leave `home_city` as `null` (auto-detected).
 - only **ask the user** for `birth_year` / `resting_hr` if step 1 couldn't fetch them
   (e.g. profile private) — otherwise don't bother them.
-- *(optional)* override the HR-zone model if the runner knows their real numbers:
-  `"hr_max"` pins the true max HR (e.g. chest-strap measured, when the FIT p99 is off),
-  and `"hr_zones": [z2,z3,z4,z5]` sets the four lower bpm thresholds directly so the
-  zone chart matches zones set manually in Garmin (bypasses the Karvonen estimate).
+- **HR zones — ask once.** Zones default to a **Karvonen estimate** (from max HR + resting
+  HR) — this always works, no input needed. But if the runner *knows* their real numbers,
+  their own zones are far more accurate, so **ask them one question**: *"Znasz swoje realne
+  tętno maksymalne / progi stref (np. zmierzone z pasa albo ustawione w Garminie)? Jeśli
+  tak — podaj, ustawię Twoje własne. Jeśli nie — policzę je automatycznie."*
+  - If they give numbers → set `"hr_max"` (true max HR) and/or `"hr_zones": [z2,z3,z4,z5]`
+    (the four lower bpm thresholds, matching zones set manually in Garmin) in `me.json`.
+  - If they don't know / skip → **do nothing** and **tell them plainly**: *"Strefy tętna
+    policzę automatycznie (szacunek Karvonena z tętna max i spoczynkowego) — możesz je
+    później podać w `me.json` przez `hr_max`/`hr_zones`."* `generate.py` also prints which
+    mode it used on every run, so the fallback is never silent.
 
 **2b. Data source — Garmin, Strava, or both (ask only if both exist).**
 This decides what feeds the page, via `me.json → "source"`: `"garmin"`, `"strava"`,

@@ -319,8 +319,13 @@ def main():
     custom_zones = cfg.get("hr_zones")
     if custom_zones:
         bounds = [float(b) for b in custom_zones]  # 4 thresholds -> 5 zones
+        print(f"  · HR zones: custom from me.json \"hr_zones\" → "
+              f"lower bounds {[round(b) for b in bounds]} bpm, max {max_hr}")
     else:
         bounds = zone_bounds(max_hr, rest_hr)
+        src = 'pinned "hr_max"' if cfg.get("hr_max") else "estimated from your data"
+        print(f"  · HR zones: auto (Karvonen) — max {max_hr} ({src}) + resting {round(rest_hr)}. "
+              f"Set \"hr_max\"/\"hr_zones\" in me.json to use your own.")
 
     by_year = defaultdict(lambda: {"runs": 0, "km": 0.0, "sec": 0.0, "hr_sec": 0.0,
                                    "hr_wsum": 0.0, "longest": 0.0, "days": set()})
