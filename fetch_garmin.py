@@ -51,11 +51,27 @@ def _login():
         pwd = os.getenv("GARMIN_PASSWORD") or getpass.getpass("Garmin password: ")
         g = Garmin(email, pwd)
         g.login()
-        try:
-            g.garth.dump(TOKENS)
-        except Exception:
-            pass
+        _save_tokens(g)
         return g
+
+
+def _save_tokens(g):
+    """Persist the session so later runs are passwordless. The token holder is
+    `g.client` in current garminconnect (older builds exposed `g.garth`); try both
+    and confirm a file was actually written, so a silent failure can't leave CI
+    with a stale token."""
+    os.makedirs(TOKENS, exist_ok=True)
+    for holder in (getattr(g, "client", None), getattr(g, "garth", None)):
+        if holder is None or not hasattr(holder, "dump"):
+            continue
+        try:
+            holder.dump(TOKENS)
+        except Exception:
+            continue
+        if any(f.endswith(".json") for f in os.listdir(TOKENS)):
+            print(f"  · saved Garmin token → {TOKENS}")
+            return
+    print("  ! WARNING: could not persist Garmin token — next run will need login again")
 
 
 def _deep_find(obj, pred):
