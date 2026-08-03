@@ -10,11 +10,13 @@ from __future__ import annotations
 import json
 import sys
 from collections import Counter, defaultdict
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
 from statistics import median
+from zoneinfo import ZoneInfo
 
+import lib_chapter10
 from geo import World, haversine_km
 from lib_fit import load_runs
 from lib_insights import build_briefing
@@ -453,9 +455,17 @@ def main():
                 return n
         return ZS[0][1]
 
+    # Calendar facts (moon phase, star sign, weekday, personal day) are about the
+    # day the runner lived, not the UTC instant. For a 5 a.m. runner these agree,
+    # but "agrees today" is not the same as "correct".
+    civil = ZoneInfo(cfg.get("timezone", "Europe/Warsaw"))
     for r in runs:
-        dd = r.start_time.date()
-        pace = (r.duration_s / r.distance_km) if (r.duration_s and r.distance_km) else None
+        r.wdate = r.start_time.replace(tzinfo=timezone.utc).astimezone(civil).date()
+        r.pace_s = (r.duration_s / r.distance_km) if (r.duration_s and r.distance_km) else None
+
+    for r in runs:
+        dd = r.wdate
+        pace = r.pace_s
         mp = moon[moon_phase(dd)]; mp["runs"] += 1
         if pace:
             mp["psum"] += pace; mp["pn"] += 1
@@ -497,6 +507,30 @@ def main():
     scale["countries"] = countries
     cmap = build_country_map(runs, world, home, home_country)
 
+    # ---- chapter 10: folklore, and the statistics that take it apart ----------
+    # Air temperature comes from cache/weather.json (see backfill_weather.py), never
+    # from the watch: a wrist sensor reads ~11 C above ambient, and mixing the two
+    # sources would plant a step change wherever the device changed.
+    wpath = cache / "weather.json"
+    weather = json.loads(wpath.read_text()) if wpath.exists() else {}
+    eso_runs = [r for r in runs if r.pace_s]
+    for r in eso_runs:
+        w = weather.get(r.id)
+        r.temp_c = w["temp_c"] if w else None
+    km_by_day = defaultdict(float)
+    for r in eso_runs:
+        km_by_day[r.wdate] += r.distance_km
+    for r in eso_runs:
+        r.vol7 = sum(km_by_day.get(r.wdate - timedelta(days=d), 0.0) for d in range(1, 8))
+    esoteric = None
+    if eso_runs:
+        esoteric = lib_chapter10.build(eso_runs, cfg, weather, moon_phase, zsign,
+                                       rec_json, date.today())
+        reg = esoteric["register"]
+        print(f"  · rozdz.10: {reg['n']} hipotez · surowo istotnych {reg['raw_hits']}"
+              f" · po korekcie BH {reg['survived']}"
+              f" · pogoda dla {esoteric['zodiac']['coverage_pct']}% biegów")
+
     data = {
         "lifetime": {"runs": len(runs), "km": round(total_km), "hours": round(total_sec / 3600),
                      "years": years[-1]["year"] - years[0]["year"] + 1 if years else 0,
@@ -518,6 +552,7 @@ def main():
         "dist_hist": dist_hist, "dist_hist_year": dist_hist_year,
         "moon": moon_list, "fav_moon": fav_moon,
         "zodiac": sorted(zodiac_list, key=lambda z: -z["runs"]), "strongest_sign": strongest,
+        "esoteric": esoteric,
         "maps": build_maps(runs, home, home_city), "scale": scale,
     }
 
