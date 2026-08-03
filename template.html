@@ -327,32 +327,84 @@
   .subh{font-family:'Anton';font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--cream);margin-bottom:2px}
 
   /* moon cards + zodiac */
-  .moons{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
-  .moon{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;text-align:center}
-  .moon.best{border-color:var(--a1);box-shadow:0 0 26px color-mix(in srgb, var(--a1) 18%, transparent)}
-  .moon .ph{font-size:30px}.moon .nm{font-size:13px;color:var(--muted);margin:6px 0 10px}
-  .moon .pc{font-family:'Anton';font-size:26px}.moon .rn{font-size:12px;color:var(--muted)}
   /* mobile: keep all 4 phases in one compact row and drop the card chrome
      (the elevated box + border made them read as tappable buttons). Placed AFTER
      the base .moon rules so these win at equal specificity; min-width:0 keeps the
      four 1fr columns equal instead of long names blowing out their track. */
   @media(max-width:640px){
-    .moons{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:var(--sp-lg)}
-    .moon{background:transparent;border:0;border-radius:0;padding:6px 2px;box-shadow:none;min-width:0;overflow-wrap:anywhere}
     .moon.best{background:transparent;border:0;box-shadow:none}
     .moon.best .pc{color:transparent;background:var(--grad);-webkit-background-clip:text;background-clip:text}
-    .moon .ph{font-size:26px}
-    .moon .nm{font-size:9.5px;margin:4px 0 6px;line-height:1.15}
-    .moon .pc{font-size:16px}
-    .moon .rn{font-size:9px;line-height:1.2}
   }
-  .zod{margin-top:26px;display:flex;flex-direction:column;gap:9px}
-  .zrow{display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:14px}
-  .zrow.king .zn{color:var(--a1)}
-  .zrow .zn{font-weight:600}.zrow .ztrack{height:12px;background:var(--ink2);border-radius:var(--r-sm);overflow:hidden}
-  .zrow .zf{height:100%;width:0;background:var(--grad);border-radius:var(--r-sm);transition:width 1s cubic-bezier(.2,.8,.2,1)}
-  .zrow .zp{font-family:'Anton';font-size:13px;text-align:right;color:var(--muted)}
   .disclaim{color:var(--muted);font-size:13px;font-style:italic;margin-top:var(--sp-sm)}
+
+  /* ── Rozdział 10: Strefa ezo ────────────────────────────────────────────
+     Own visual register on purpose. The chapter mimics a star chart so the
+     reveal has something to strip away: .ez-plain drops every ornament and
+     shows the same data as bare evidence. One primitive does all the work —
+     .ez-row plots deviation from the runner's own mean against a +/-2 SE band,
+     so an effect that is indistinguishable from noise LOOKS indistinguishable
+     from noise. Full-width bars scaled to 38-100% flattered the data. */
+  .ez{--ez-line:color-mix(in srgb, var(--cream) 12%, transparent);
+    --ez-slow:var(--z4); --ez-noise:var(--muted)}
+  .ez-head{display:flex;align-items:baseline;gap:var(--sp-md);margin:52px 0 4px;
+    border-top:1px solid var(--ez-line);padding-top:var(--sp-lg)}
+  .ez-head .n{font-family:'Anton';font-size:12px;letter-spacing:.22em;color:var(--a2);
+    opacity:.85;flex:none}
+  .ez-head h3{font-family:'Anton';font-size:clamp(19px,2.4vw,25px);font-weight:400;
+    line-height:1.1;letter-spacing:.01em}
+  .ez-sub{color:var(--muted);font-size:14.5px;line-height:1.65;margin-top:var(--sp-sm);max-width:62ch}
+  .ez-rows{display:flex;flex-direction:column;gap:7px;margin-top:var(--sp-lg)}
+  .ez-row{display:grid;grid-template-columns:minmax(96px,148px) 1fr 58px;align-items:center;
+    gap:var(--sp-md);font-size:14px}
+  .ez-name{color:var(--cream);overflow-wrap:anywhere}
+  .ez-row.is-noise .ez-name,.ez-row.is-noise .ez-num{color:var(--muted)}
+  .ez-num{font-family:'Anton';font-size:13px;text-align:right;color:var(--cream);
+    font-variant-numeric:tabular-nums}
+  .ez-track{position:relative;height:15px}
+  .ez-track::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;
+    background:color-mix(in srgb, var(--cream) 30%, transparent)}
+  .ez-band[hidden]{display:none}
+  .ez-band{position:absolute;top:3px;height:9px;border-left:1px solid var(--ez-line);
+    border-right:1px solid var(--ez-line)}
+  .ez-bar{position:absolute;top:6px;height:3px;border-radius:2px;background:var(--a2);
+    width:0;transition:width .9s cubic-bezier(.2,.8,.2,1),left .9s cubic-bezier(.2,.8,.2,1)}
+  .ez-bar.slow{background:var(--ez-slow)}
+  .ez-bar.noise{background:var(--ez-noise)}
+  .ez-legend{display:flex;flex-wrap:wrap;gap:var(--sp-md);margin-top:var(--sp-md);
+    color:var(--muted);font-size:12.5px}
+  .ez-legend i{display:inline-block;width:15px;height:3px;border-radius:2px;
+    margin-right:6px;vertical-align:middle}
+  /* one big number in an orbit — Mercury */
+  .ez-orb{display:flex;align-items:center;gap:var(--sp-xl);margin-top:var(--sp-xl);flex-wrap:wrap}
+  .ez-ring{width:104px;height:104px;flex:none;position:relative}
+  .ez-ring circle{fill:none;stroke:var(--ez-line);stroke-width:1}
+  .ez-ring .arc{stroke:var(--a2);stroke-width:3;stroke-linecap:round;
+    transform:rotate(-90deg);transform-origin:50% 50%}
+  .ez-ring .dot{fill:var(--a1)}
+  .ez-big{font-family:'Anton';font-size:clamp(40px,6vw,64px);line-height:1;color:var(--cream)}
+  .ez-big span{font-size:.36em;color:var(--muted);margin-left:8px}
+  /* context strip above the biorhythm */
+  .ez-card{background:var(--ink2);border:1px solid var(--line);border-left:2px solid var(--a2);
+    border-radius:0 var(--r-md) var(--r-md) 0;padding:var(--sp-md) var(--sp-lg);
+    margin-top:var(--sp-lg);font-size:15px;line-height:1.6}
+  .ez-card b{color:var(--a1)}
+  /* the register — deliberately looks like a results table, not a graphic */
+  .ez-reg{width:100%;border-collapse:collapse;margin-top:var(--sp-lg);font-size:13.5px}
+  .ez-reg th{text-align:left;font-weight:400;color:var(--muted);font-size:12px;
+    letter-spacing:.1em;text-transform:uppercase;padding-bottom:var(--sp-sm);
+    border-bottom:1px solid var(--ez-line)}
+  .ez-reg td{padding:9px 0;border-bottom:1px solid var(--ez-line);color:var(--muted)}
+  .ez-reg td:first-child{color:var(--cream)}
+  .ez-reg td.p{font-family:'Anton';text-align:right;font-variant-numeric:tabular-nums}
+  .ez-reg tr.hit td,.ez-reg tr.hit td:first-child{color:var(--a1)}
+  /* the reveal: same data, every ornament removed */
+  .ez-plain{border-left:2px solid var(--ez-line);padding-left:var(--sp-lg)}
+  .ez-plain .ez-name{font-family:var(--f-body,inherit);letter-spacing:0}
+  @media(max-width:760px){
+    .ez-row{grid-template-columns:minmax(78px,104px) 1fr 46px;gap:var(--sp-sm);font-size:13px}
+    .ez-head{margin-top:38px}
+    .ez-orb{gap:var(--sp-lg)}
+  }
 
   /* educational annotation */
   .edu{margin-top:26px;border-left:2px solid;border-image:var(--grad) 1;padding:8px 0 8px 18px;
@@ -534,17 +586,84 @@
   <!-- FUN -->
   <section id="fun" style="order:10">
     <div class="kicker rv">Rozdział 10 — z przymrużeniem oka</div>
-    <h2 class="rv">Astrologia biegacza</h2>
-    <p class="lead rv d1">Czas na kompletnie nienaukowe wnioski. Bo czemu nie. 🔮</p>
+    <h2 class="rv">Strefa ezo</h2>
+    <p class="lead rv d1">Kilka hipotez, w które nikt rozsądny nie wierzy: Księżyc, Merkury,
+      biorytmy, numerologia, zodiak. Każda potraktowana poważnie i policzona uczciwie — z pasmem
+      błędu, testem statystycznym i korektą na to, że przy siedmiu próbach coś zawsze wyjdzie.
+      Na końcu jest tabela, która nie kłamie, nawet gdyby miała zepsuć puentę.</p>
 
-    <div class="rv d1" style="margin-top:36px"><div class="subh">🌙 Bieganie a fazy Księżyca</div></div>
-    <div class="moons" id="moons"></div>
-    <p class="disclaim rv">Tak, policzyliśmy fazę Księżyca dla każdego biegu. Nie, NASA tego nie zatwierdza.</p>
+    <div class="ez">
 
-    <div class="rv d1" style="margin-top:46px"><div class="subh">♈ W którym znaku jesteś najmocniejszy</div></div>
-    <div class="zod" id="zodiac"></div>
-    <p class="disclaim rv">Dłuższy słupek = szybsze średnie tempo w dniu biegu (👑 = najszybszy znak).
-      Korelacja ≠ przyczyna — gwiazdy nie biegają za Ciebie.</p>
+      <div class="ez-head rv"><span class="n">I</span><h3>Fazy Księżyca</h3></div>
+      <p class="ez-sub rv d1">Cztery fazy, <span id="ez-moon-n">–</span> biegów. Każdy słupek to odchylenie
+        od Twojej średniej <b><span id="ez-mean">–</span>/km</b>, a pionowe kreski to pasmo dwóch błędów
+        standardowych. Jeśli pasmo obejmuje oś, różnicy nie ma.</p>
+      <div class="ez-rows rv d1" id="ez-moon"></div>
+      <div class="ez-legend rv"><span><i style="background:var(--a2)"></i>szybciej</span>
+        <span><i style="background:var(--z4)"></i>wolniej</span>
+        <span><i style="background:var(--muted)"></i>w granicach szumu</span>
+        <span><i style="background:none;border-left:1px solid var(--muted);border-right:1px solid var(--muted);height:9px;border-radius:0"></i>±2 błędy standardowe</span></div>
+      <p class="disclaim rv" id="ez-moon-note">–</p>
+
+      <div class="ez-head rv"><span class="n">II</span><h3>Merkury retrogradny</h3></div>
+      <p class="ez-sub rv d1">Liczone z pozycji planety, nie z tabelki w internecie: retrograd trwa wtedy,
+        gdy geocentryczna długość ekliptyczna Merkurego maleje. Okresy cienia pomijamy świadomie.</p>
+      <div class="ez-orb rv d1">
+        <svg class="ez-ring" viewBox="0 0 104 104" aria-hidden="true">
+          <circle cx="52" cy="52" r="44"/>
+          <circle class="arc" id="ez-arc" cx="52" cy="52" r="44"/>
+          <circle class="dot" id="ez-dot" cx="52" cy="8" r="4"/>
+        </svg>
+        <div>
+          <div class="ez-big"><span id="ez-merc-km">0</span><span>km pod retrogradem</span></div>
+          <p class="ez-sub" id="ez-merc-note" style="margin-top:10px">–</p>
+        </div>
+      </div>
+
+      <div id="ez-block-bio">
+      <div class="ez-head rv"><span class="n">III</span><h3 id="ez-bio-title">Biorytm</h3></div>
+      <p class="ez-sub rv d1">Trzy krzywe sinusoidalne o okresach 23, 28 i 33 dni, liczone od dnia urodzenia.
+        Sprawdźmy, co mówiły w dniu Twojego najlepszego długiego biegu.</p>
+      <div class="ez-card rv d1" id="ez-bio-card">–</div>
+      <div class="ez-rows rv d1" id="ez-bio"></div>
+      <p class="disclaim rv" id="ez-bio-note">–</p>
+      </div>
+
+      <div id="ez-block-num">
+      <div class="ez-head rv"><span class="n">IV</span><h3>Twoja szczęśliwa cyfra</h3></div>
+      <p class="ez-sub rv d1">Suma cyfr daty urodzenia plus suma cyfr daty biegu, redukowana do jednej cyfry.
+        Klasyczna numerologia. Zmień system liczbowy i zobacz, co się stanie z wynikiem.</p>
+      <div class="distbar rv d1">
+        <div class="lvltabs" role="tablist" aria-label="System liczbowy">
+          <button class="lvltab on" data-num="10" role="tab" aria-selected="true" type="button">dziesiętny</button>
+          <button class="lvltab" data-num="16" role="tab" aria-selected="false" type="button">szesnastkowy</button>
+        </div>
+        <div class="dist-note" id="ez-num-note"></div>
+      </div>
+      <div class="ez-rows rv d1" id="ez-num"></div>
+      <p class="disclaim rv" id="ez-num-disclaim">–</p>
+      </div>
+
+      <div class="ez-head rv"><span class="n">V</span><h3>Znaki zodiaku</h3></div>
+      <p class="ez-sub rv d1">Ostatnia i najmocniejsza hipoteza. Po lewej surowy ranking, po prawej ten sam
+        ranking po odjęciu temperatury powietrza i kilometrażu z poprzedzających siedmiu dni.</p>
+      <div class="distbar rv d1">
+        <div class="lvltabs" role="tablist" aria-label="Wersja rankingu znaków">
+          <button class="lvltab on" data-zod="raw" role="tab" aria-selected="true" type="button">surowo</button>
+          <button class="lvltab" data-zod="resid" role="tab" aria-selected="false" type="button">po odjęciu pogody</button>
+        </div>
+        <div class="dist-note" id="ez-zod-note"></div>
+      </div>
+      <div class="ez-rows rv d1" id="ez-zod"></div>
+      <p class="disclaim rv" id="ez-zod-disclaim">–</p>
+
+      <div class="ez-head rv"><span class="n">VI</span><h3>Rachunek sumienia</h3></div>
+      <p class="ez-sub rv d1">Każda hipoteza wyżej to test statystyczny wykonany przy tym buildzie.
+        Przy siedmiu testach i progu 0,05 sam przypadek daje średnio <b><span id="ez-exp">–</span></b> trafienia,
+        więc surowe p-wartości nie wystarczą — poniżej korekta Benjaminiego-Hochberga.</p>
+      <table class="ez-reg rv d1" id="ez-reg"></table>
+      <p class="disclaim rv" id="ez-verdict">–</p>
+    </div>
   </section>
 
   <!-- OUTRO -->
@@ -839,44 +958,195 @@ simpleBars('#wdBars',DATA.weekday,w=>w.runs,w=>w.d);
       d=>d.runs===Math.max(...items.map(x=>x.runs))); };
   if(!dy){ draw(DATA.dist_hist); return; }   // data.json from before the season split
   const yl=document.getElementById('dist-tab-year'); if(yl) yl.textContent=dy.year;
-  const tabs=[...document.querySelectorAll('[data-dist]')], note=$('#distNote');
+  const note=$('#distNote');
   const nk=v=>(+v).toLocaleString('pl');   // 8.3 -> "8,3"
-  const show=mode=>{
+  tabGroup(document,'dist',mode=>{
     const season=mode==='year';
     draw(season?dy.hist:DATA.dist_hist);
     if(note) note.textContent=season
       ? `${dy.runs} biegów · mediana ${nk(dy.median)} km`
       : `${DATA.lifetime.runs} biegów · mediana ${nk(dy.median_all)} km`;
-    tabs.forEach(t=>{const on=t.dataset.dist===mode;
-      t.classList.toggle('on',on); t.setAttribute('aria-selected',on);});
-  };
-  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.dist)));
-  show('year');
+  });
 })();
 
-/* ---------- moon + zodiac (for fun) ---------- */
+/* One tab controller, used by the map scene, the distance histogram, the number
+   base and the zodiac. attr picks the data-* key; show(value) does the work. */
+function tabGroup(root, attr, show){
+  // role=tab only: the map scene puts the same data-lvl on its panels, and those
+  // must not receive aria-selected or the tab .on class
+  const tabs=[...root.querySelectorAll(`[role=tab][data-${attr}]`)];
+  if(!tabs.length) return null;
+  const go=v=>{
+    tabs.forEach(t=>{const on=t.dataset[attr]===String(v);
+      t.classList.toggle('on',on); t.setAttribute('aria-selected',on);});
+    show(v);
+  };
+  tabs.forEach(t=>t.addEventListener('click',()=>go(t.dataset[attr])));
+  go(tabs[0].dataset[attr]);
+  return {go};
+}
+
+/* ---------- rozdział 10: Strefa ezo ---------- */
 (function(){
-  const fastest=DATA.moon.filter(m=>m.pace_s).sort((a,b)=>a.pace_s-b.pace_s)[0];
-  $('#moons').innerHTML=DATA.moon.map(m=>{
-    const [ic,...nm]=m.phase.split(' ');
-    return `<div class="moon${m===fastest?' best':''}"><div class="ph">${ic}</div>
-      <div class="nm">${nm.join(' ')}</div><div class="pc">${m.pace||'—'}</div>
-      <div class="rn">${m.runs} biegów${m===fastest?' · najszybciej ⚡':''}</div></div>`;
-  }).join('');
-  // sort by speed (fastest avg pace first); bar length = how fast (longer = faster)
-  const zz=DATA.zodiac.filter(s=>s.pace_s).sort((a,b)=>a.pace_s-b.pace_s);
-  const pMin=Math.min(...zz.map(s=>s.pace_s)), pMax=Math.max(...zz.map(s=>s.pace_s));
-  $('#zodiac').innerHTML=zz.map(s=>{
-    const king=s.sign===DATA.strongest_sign;
-    const w=pMax===pMin?100:38+(pMax-s.pace_s)/(pMax-pMin)*62;  // 38..100%, faster = wider
-    return `<div class="zrow${king?' king':''}"><div class="zn">${s.sign}${king?' 👑':''}</div>
-      <div class="ztrack"><div class="zf" data-w="${w.toFixed(0)}"></div></div>
-      <div class="zp">${s.pace}/km</div></div>`;
-  }).join('');
-  new IntersectionObserver((es,o)=>{es.forEach(e=>{if(e.isIntersecting){
-    document.querySelectorAll('#zodiac .zf').forEach((f,i)=>setTimeout(()=>f.style.width=f.dataset.w+'%',i*60));
-    o.disconnect();
-  }})},{threshold:.2}).observe($('#zodiac'));
+  const E=DATA.esoteric; if(!E) return;
+  const pl=n=>(+n).toLocaleString('pl');
+  const signed=n=>(n>0?'+':'−')+pl(Math.abs(Math.round(n)));
+  // fixed 3 decimals so the register column reads as one number, not a ragged mix
+  const pval=p=>p<0.0005?'&lt;0,001':p.toFixed(3).replace('.',',');
+
+  /* Deviation rows. Scale covers every bar AND its whole error band, so a wide
+     band on a thin group reads as "we barely know" instead of being clipped. */
+  /* opt.unit: what the number is measured in. opt.up: true when a higher value is
+     the good one. Pace is the opposite — lower is faster — so the default is false
+     and the biorhythm block has to say otherwise or it colours good days orange. */
+  function rows(el,data,fmt,opt){
+    opt=opt||{};
+    const unit=opt.unit===undefined?' s':opt.unit;
+    if(!data||!data.length){el.innerHTML='';return;}
+    const reach=Math.max(...data.map(d=>Math.abs(d.dev_s)+2*d.sem_s),1);
+    const pos=v=>50+(v/reach)*46;
+    el.innerHTML=data.map(d=>{
+      const lo=pos(d.dev_s-2*d.sem_s), hi=pos(d.dev_s+2*d.sem_s);
+      const a=Math.min(50,pos(d.dev_s)), b=Math.max(50,pos(d.dev_s));
+      const good=opt.up?d.dev_s>0:d.dev_s<0;
+      const cls=d.noise?'noise':(good?'':'slow');
+      return `<div class="ez-row${d.noise?' is-noise':''}">
+        <div class="ez-name">${fmt(d)}${d.small?` <span style="color:var(--muted)">n=${d.runs||d.n}</span>`:''}</div>
+        <div class="ez-track"><div class="ez-band"${d.sem_s?'':' hidden'} style="left:${lo}%;width:${hi-lo}%"></div>
+          <div class="ez-bar ${cls}" data-l="${a}" data-w="${b-a}" style="left:50%"></div></div>
+        <div class="ez-num">${signed(d.dev_s)}${unit}</div></div>`;
+    }).join('');
+    animate(el);
+  }
+  function animate(el){
+    el.querySelectorAll('.ez-bar').forEach((f,i)=>setTimeout(()=>{
+      f.style.left=f.dataset.l+'%'; f.style.width=f.dataset.w+'%';},60+i*45));
+  }
+  const seen=new WeakSet();
+  const io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting&&!seen.has(e.target)){seen.add(e.target);animate(e.target);}
+  }),{threshold:.15});
+
+  const set=(id,v)=>{const el=document.getElementById(id); if(el)el.textContent=v;};
+  const html=(id,v)=>{const el=document.getElementById(id); if(el)el.innerHTML=v;};
+
+  /* I — moon */
+  set('ez-mean',E.mean_pace); set('ez-moon-n',pl(E.runs));
+  rows($('#ez-moon'),E.moon.rows,d=>d.key);
+  const mc=E.moon.contrast, mo=E.moon;
+  html('ez-moon-note',`Najdłuższy bieg w historii wypadł pod fazą <b>${mo.longest.phase}</b>`
+    +(mo.pb?`, a rekord na ${mo.pb.label} — pod fazą <b>${mo.pb.phase}</b>`:'')
+    +`. Rozstęp między najszybszą i najwolniejszą fazą: <b>${pl(mo.phase_spread_s)} s/km</b>. `
+    +(mc.kind==='weekday'
+      ? `Rozstęp między Twoją najlepszą i najgorszą <b>${mc.label}</b>: <b>${pl(mc.spread_s)} s/km</b> — ${Math.round(mc.spread_s/Math.max(mo.phase_spread_s,1))} razy więcej.`
+      : `Rozrzut tempa wewnątrz samej fazy <b>${mc.label}</b>: <b>${pl(mc.spread_s)} s/km</b>.`));
+
+  /* II — Mercury */
+  const M=E.mercury;
+  set('ez-merc-km',pl(M.km));
+  const arc=document.getElementById('ez-arc');
+  if(arc){const C=2*Math.PI*44, f=C*M.km_pct/100;
+    arc.setAttribute('stroke-dasharray',`${f} ${C-f}`);
+    const ang=(M.km_pct/100)*2*Math.PI-Math.PI/2, dot=document.getElementById('ez-dot');
+    if(dot){dot.setAttribute('cx',(52+44*Math.cos(ang)).toFixed(1));
+      dot.setAttribute('cy',(52+44*Math.sin(ang)).toFixed(1));}}
+  html('ez-merc-note',
+    `To <b>${M.km_pct}%</b> Twojego kilometrażu, przy <b>${M.days_pct}%</b> dni okresu z retrogradem — `
+    +`czyli dokładnie tyle, ile wyszłoby z samego kalendarza. Tempo pod retro <b>${M.pace_retro}/km</b>, `
+    +`poza retro <b>${M.pace_normal}/km</b>. `
+    +(M.noise
+      ? `Różnica ${pl(Math.abs(M.diff_s))} s/km wygląda na coś, ale test Welcha daje <b>p = ${pval(M.p)}</b> — to szum.`
+      : `Test Welcha: <b>p = ${pval(M.p)}</b>.`)
+    +(M.active?` Retrograd trwa. Zostało <b>${M.days_left}</b> dni.`
+              :` Najbliższy retrograd za <b>${M.days_to_next}</b> dni.`));
+
+  /* III — biorhythm */
+  const B=E.biorhythm;
+  // no birth date in me.json -> these two blocks have nothing to say; drop them
+  // entirely rather than leaving em-dash placeholders on the page
+  if(!B){const b=document.getElementById('ez-block-bio'); if(b)b.remove();}
+  if(B){
+    const T={bad:['Dzień, w którym wszystko było przeciwko Tobie','Biorytm sugerował, żebyś nie wstawał z łóżka.'],
+             flat:['Dzień absolutnie przeciętny','Biorytm nie miał w tej sprawie zdania.'],
+             good:['Dzień, w którym gwiazdy były po Twojej stronie','Tego jednego razu biorytm trafił.']}[B.tone];
+    set('ez-bio-title',T[0]);
+    html('ez-bio-card',`<b>${B.date}</b> · ${B.km} km w tempie ${B.pace}/km — najszybszy długi bieg w historii.`);
+    rows($('#ez-bio'),B.values.map(v=>({key:v.label,dev_s:v.pct,sem_s:0,noise:false,
+      small:false,critical:v.critical})),d=>d.key+(d.critical?' · dzień krytyczny':''),
+      {unit:'%',up:true});
+    html('ez-bio-note',T[1]+` Skala tutaj to procent wychylenia krzywej, nie sekundy. `
+      +`Wybraliśmy ten bieg z <b>${pl(B.fastest_long)}</b> biegów powyżej 10 km, bo Garmin nie oznaczył żadnego jako zawody.`);
+  }
+
+  /* IV — numerology */
+  const N=E.numerology;
+  if(!N){const b=document.getElementById('ez-block-num'); if(b)b.remove();}
+  if(N) tabGroup(document,'num',v=>{
+    const b=N['base'+v];
+    rows($('#ez-num'),b.rows,d=>d.label);
+    set('ez-num-note',`${b.rows.length} możliwych cyfr`);
+    html('ez-num-disclaim', v==='10'
+      ? `Twoja szczęśliwa cyfra to <b>${b.lucky}</b>.`
+      : `Twoja szczęśliwa cyfra to teraz <b>${b.lucky}</b>. Ta sama procedura, te same dwie daty, inna odpowiedź — `
+        +`bo numerologia milcząco zakłada, że Wszechświat liczy w systemie dziesiętnym. Zakłada tak dlatego, że mamy dziesięć palców.`);
+  });
+
+  /* V — zodiac, with the reveal */
+  const Z=E.zodiac;
+  // without enough weather data there is no residual ranking, so the second tab
+  // would open onto nothing: drop it and leave the section single-tabbed
+  if(!Z.resid||!Z.resid.length){
+    const t=document.querySelector('[data-zod="resid"]'); if(t)t.remove();
+  }
+  tabGroup(document,'zod',v=>{
+    const raw=v==='raw';
+    const data=raw?Z.raw:Z.resid;
+    $('#ez-zod').classList.toggle('ez-plain',!raw);
+    // the reveal drops the astrological glyphs too: same signs, no costume
+    rows($('#ez-zod'),data,d=>raw?d.key:d.key.replace(/^\S+\s+/,''));
+    set('ez-zod-note',raw?`rozstęp ${pl(Z.spread_raw_s)} s/km`
+                         :(Z.spread_resid_s!=null?`rozstęp ${pl(Z.spread_resid_s)} s/km`:'brak modelu'));
+    if(raw){
+      html('ez-zod-disclaim',`Czołówka — <b>${Z.top.join(', ')}</b> — wygląda przekonująco. `
+        +`Zanim uwierzysz: znak z daty biegu to po prostu pozycja Słońca, czyli pora roku. Zakładka obok odejmuje pogodę.`);
+    } else if(Z.verdict===null){
+      html('ez-zod-disclaim',`Model niedostępny — dane pogodowe mamy dla ${Z.coverage_pct}% biegów.`);
+    } else {
+      const base=`Model: tempo w zależności od temperatury powietrza i kilometrażu z poprzednich 7 dni, `
+        +`na <b>${Z.coverage_pct}%</b> biegów. Czołówka ma medianę <b>${pl(Z.top_temp)}°C</b>, dno — <b>${pl(Z.bottom_temp)}°C</b>. `;
+      html('ez-zod-disclaim', base + (
+        Z.verdict==='explained'
+          ? `Po odjęciu obu zmiennych z rozstępu <b>${pl(Z.spread_raw_s)} s/km</b> zostaje <b>${pl(Z.spread_resid_s)} s/km</b>. To nie znak był szybki, tylko pogoda.`
+        : Z.verdict==='partial'
+          ? `Rozstęp spadł z <b>${pl(Z.spread_raw_s)}</b> do <b>${pl(Z.spread_resid_s)} s/km</b>. Zostało więcej, niż się spodziewaliśmy — i nadal za mało, żeby cokolwiek z tego wynikało.`
+          : `I tu uczciwość boli: temperatura tych dwóch grup jest praktycznie taka sama, `
+            +`a po odjęciu obu zmiennych rozstęp nie spadł — urósł z <b>${pl(Z.spread_raw_s)}</b> do <b>${pl(Z.spread_resid_s)} s/km</b>. `
+            +`Nie udało się tego wytłumaczyć pogodą. Najprostsze pozostałe wyjaśnienie nie jest astrologiczne: `
+            +`znak to okno trzydziestu dni w roku, a Twój plan treningowy ma sezony. Ale tego już nie sprawdziliśmy — i nie będziemy udawać, że tak.`));
+    }
+  });
+
+  /* VI — the register */
+  const R=E.register;
+  set('ez-exp',pl(R.expected));
+  html('ez-reg',`<tr><th>hipoteza</th><th>test</th><th style="text-align:right">p</th><th style="text-align:right">po korekcie</th></tr>`
+    +E.tests.map(t=>`<tr class="${t.significant?'hit':''}"><td>${t.label}</td><td>${t.method}</td>`
+      +`<td class="p">${pval(t.p)}</td>`
+      +`<td class="p">${t.significant?'zostaje':'odpada'}</td></tr>`).join(''));
+  const V={
+    none:`Sprawdziliśmy <b>${R.n}</b> hipotez ezoterycznych. Po korekcie na wielokrotne testowanie istotnych zostało: <b>zero</b>. Gwiazdy nie biegają za Ciebie. Ty biegasz. 🏃`,
+    one_explained:`Po korekcie istotna została jedna: <b>${R.names[0]}</b> — i to ta sama, która znika po odjęciu pogody. Patrz zakładka obok. Gwiazdy nie biegają za Ciebie. Ty biegasz. 🏃`,
+    one_open:`Po korekcie istotna została jedna: <b>${R.names[0]}</b>. Nie zniknęła po odjęciu pogody i kilometrażu, więc nie zamkniemy tego żartem. `
+      +`Rozdział miał się rozsypać w całości i rozsypał się w sześciu siódmych — ostatnia siódma mówi tylko tyle, że Twoja forma ma sezony, a zodiak jest kalendarzem. `
+      +`Gwiazdy nadal nie biegają za Ciebie. Ty biegasz. 🏃`,
+    many:`Po korekcie istotne zostały: <b>${R.names.join(', ')}</b>. Przy <b>${R.n}</b> testach na <b>${pl(E.runs)}</b> biegach to nadal słaba przesłanka, ale uczciwie — nie zerowa.`
+  }[R.verdict];
+  html('ez-verdict',V);
+
+  ['#ez-moon','#ez-bio','#ez-num','#ez-zod'].forEach(s=>{const el=$(s); if(el)io.observe(el);});
+  // renumber whatever survived, so the chapter never shows I, II, V, VI
+  const R_=['I','II','III','IV','V','VI','VII'];
+  document.querySelectorAll('#fun .ez-head .n').forEach((el,i)=>{el.textContent=R_[i]||'';});
 })();
 
 /* ---------- map carousel on dark Leaflet tiles ---------- */
@@ -1002,7 +1272,6 @@ simpleBars('#wdBars',DATA.weekday,w=>w.runs,w=>w.d);
   const foreign=((DATA.scale&&DATA.scale.countries)||[]).filter(c=>c.name!=='Polska');
   // scope every lookup to this scene — .lvltabs is a shared style, reused elsewhere
   const scene=stage.closest('.scene')||document;
-  const tabs=[...scene.querySelectorAll('.lvltab')];
   const lvls=[...stage.querySelectorAll('.lvl')];
   const bull=scene.querySelector('.bullseye');
   const statEl=$('#sceneStat'), subEl=$('#sceneSub');
@@ -1013,21 +1282,22 @@ simpleBars('#wdBars',DATA.weekday,w=>w.runs,w=>w.d);
   ];
   let cur=-1;
   const setH=()=>{const on=lvls[cur]; if(on)stage.style.height=on.offsetHeight+'px';};
-  function go(i){
-    i=Math.max(0,Math.min(2,i)); if(i===cur)return; cur=i;
-    tabs.forEach(t=>{const on=+t.dataset.lvl===i;t.classList.toggle('on',on);t.setAttribute('aria-selected',on);});
+  // panel logic lives here; tab state is the shared controller's job
+  function paint(i){
+    i=Math.max(0,Math.min(lvls.length-1,i)); if(i===cur)return; cur=i;
     lvls.forEach((l,j)=>l.classList.toggle('on',j===i));
     bull.setAttribute('class','bullseye l'+i);  // SVG className is read-only
     statEl.textContent=HEAD[i].n; subEl.textContent=HEAD[i].s;
     requestAnimationFrame(setH);
   }
-  tabs.forEach(t=>t.onclick=()=>go(+t.dataset.lvl));
+  const group=tabGroup(scene,'lvl',v=>paint(+v));   // also paints the initial level
+  if(!group) return;
+  const go=i=>group.go(Math.max(0,Math.min(lvls.length-1,i)));
   scene.querySelector('.lvltabs').addEventListener('keydown',e=>{
     if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
     else if(e.key==='ArrowRight'){e.preventDefault();go(cur+1);}
   });
   let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(setH,160);});
-  go(0);
   setTimeout(setH,300); setTimeout(setH,900);
   window.__scene={go};
 })();
