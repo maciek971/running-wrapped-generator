@@ -702,6 +702,8 @@
 const DATA = {};
   const ZC = {Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)'};
 const $ = s => document.querySelector(s);
+/* Ułamki po polsku: 9.2 -> "9,2". Liczby całkowite zostają bez zmian. */
+const dec = v => (typeof v === 'number' ? v : parseFloat(v)).toLocaleString('pl');
 
 /* ---------- reveal + chart triggers ---------- */
 const io = new IntersectionObserver((es)=>{
@@ -722,7 +724,7 @@ function countUp(el,to,dur=1600,dec=0){
 const L=DATA.lifetime;
 const heroObs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
   countUp($('#km'),L.km); countUp($('#runs'),L.runs); countUp($('#hours'),L.hours);
-  countUp($('#years'),L.years); $('#earth').textContent=L.earth_pct;
+  countUp($('#years'),L.years); $('#earth').textContent=dec(L.earth_pct);
   heroObs.disconnect();
 }})});
 heroObs.observe($('.hero'));
@@ -881,7 +883,7 @@ function _shotMode(){
     document.querySelectorAll('.rfill,.zf').forEach(f=>f.style.width=f.dataset.w+'%');
     const fmt=n=>n.toLocaleString('pl').replace(/,/g,' ');
     $('#km').textContent=fmt(L.km);$('#runs').textContent=fmt(L.runs);
-    $('#hours').textContent=fmt(L.hours);$('#years').textContent=L.years;$('#earth').textContent=L.earth_pct;
+    $('#hours').textContent=fmt(L.hours);$('#years').textContent=L.years;$('#earth').textContent=dec(L.earth_pct);
     const q=new URLSearchParams(location.search);
     const sl=q.get('slide');
     if(window.__maps)window.__maps.activate(sl!==null?+sl:0);
@@ -902,7 +904,7 @@ function _shotMode(){
   h+=`<div class="rec-hero">
     <div><div class="rec-lbl">${ICON.route} Najdłuższy bieg</div>
       <div class="sub" style="color:var(--cream);opacity:.6;font-size:12.5px;margin-top:9px">${esc(r.longest.name)} · ${esc(r.longest.date)}</div></div>
-    <div class="num">${String(lw).split('.')[0]}<span class="u">${lw%1?'.'+String(lw).split('.')[1]:''} km</span></div></div>`;
+    <div class="num">${String(lw).split('.')[0]}<span class="u">${lw%1?','+String(lw).split('.')[1]:''} km</span></div></div>`;
 
   if(r.race&&r.race.length){
     h+='<div class="rec-cap">Rekord vs prognoza Garmina na dziś</div><div class="rec-race">';
@@ -921,7 +923,7 @@ function _shotMode(){
   const km=n=>n.toLocaleString('pl').replace(/,/g,' ');
   h+=`<div class="rec-sup">
     <div class="rtile"><div class="rec-lbl">Łącznie</div><div class="t">${km(r.totals.km)}<span class="u"> km</span></div><div class="sub">${km(r.totals.runs)} biegów</div></div>
-    <div class="rtile"><div class="rec-lbl">Rekordowy tydzień</div><div class="t">${r.peak_week.km}<span class="u"> km</span></div></div>
+    <div class="rtile"><div class="rec-lbl">Rekordowy tydzień</div><div class="t">${dec(r.peak_week.km)}<span class="u"> km</span></div></div>
     <div class="rtile"><div class="rec-lbl">Najszybszy rok</div><div class="t">${r.fastest_year.pace}</div><div class="sub">${r.fastest_year.year}</div></div></div>`;
   $('#rec-body').innerHTML=h;
 })();
@@ -1268,12 +1270,12 @@ function tabGroup(root, attr, show){
   $('#scaleElev').innerHTML=`<div class="lbl">Suma podbiegów</div>
     <div class="huge">${fmt(s.ascent_m)} m</div>
     <div class="cmp">⛰️ ${climbed?`wyżej niż <b>${climbed.name}</b> (${fmt(climbed.h)} m)`:''}${next?` — ${Math.round(next.x*100)}% drogi na ${next.name}`:''}</div>
-    <div class="rows">${s.peaks.map(p=>`<div class="r"><span>${p.name} · ${fmt(p.h)} m</span><b>×${p.x}</b></div>`).join('')}</div>`;
+    <div class="rows">${s.peaks.map(p=>`<div class="r"><span>${p.name} · ${fmt(p.h)} m</span><b>×${dec(p.x)}</b></div>`).join('')}</div>`;
   const c=s.distance.closest, home=(DATA.geo&&DATA.geo.home_city)||'dom';
   $('#scaleDist').innerHTML=`<div class="lbl">Suma dystansu</div>
     <div class="huge">${fmt(L.km)} km</div>
     <div class="cmp">🧭 to prawie tyle, co <b>${home} → ${c.city}</b> (${fmt(c.km)} km)</div>
-    <div class="rows">${s.distance.cities.map(x=>`<div class="r"><span>${home} → ${x.city} · ${fmt(x.km)} km</span><b>×${(L.km/x.km).toFixed(1)}</b></div>`).join('')}</div>`;
+    <div class="rows">${s.distance.cities.map(x=>`<div class="r"><span>${home} → ${x.city} · ${fmt(x.km)} km</span><b>×${dec(+(L.km/x.km).toFixed(1))}</b></div>`).join('')}</div>`;
 })();
 
 /* ---------- countries highlight ---------- */
