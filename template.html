@@ -28,11 +28,13 @@
     --lh-head:1.06; --lh-display:1.08;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
+  /* clip, not hidden: hidden on body alone is unreliable on mobile Safari, which
+     still lets the user pan sideways. clip creates no scroll container at all. */
+  html{scroll-behavior:smooth;max-width:100%;overflow-x:hidden;overflow-x:clip}
   body{
     background:var(--ink); color:var(--cream);
     font-family:'Hanken Grotesk',system-ui,sans-serif; line-height:1.5;
-    overflow-x:hidden;
+    max-width:100%; overflow-x:hidden; overflow-x:clip;
   }
   /* grain + glow atmosphere */
   body::before{
@@ -125,6 +127,9 @@
   #hourChart text[font-size="30"]{fill:var(--cream)}
   #hourChart #radF stop:first-child{stop-color:var(--a1)}
   #hourChart #radF stop:last-child{stop-color:var(--a3)}
+  /* Leaflet runs with preferCanvas, so route colour is drawn imperatively and CSS
+     cannot reach it; the polyline option below reads --a1 at runtime instead.
+     This rule only covers the SVG fallback renderer. */
   .leaflet-overlay-pane path{stroke:var(--a1)}
   .line-path{stroke-dasharray:2600;stroke-dashoffset:2600;transition:stroke-dashoffset 1.6s ease}
   .in .line-path{stroke-dashoffset:0}
@@ -209,7 +214,10 @@
     background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .scope-stat span{font-size:12px;color:var(--muted)}
   /* the stage: one frame, levels cross-fade + scale (zoom feel), height animates */
-  .stage2{position:relative;transition:height .42s cubic-bezier(.2,.8,.2,1)}
+  /* Inactive levels sit at scale(1.05) and visibility:hidden does NOT take them
+     out of the overflow calculation, so each one pushed 8px past this box on
+     both sides. Invisible behind desktop margins, off-screen on a phone. */
+  .stage2{position:relative;overflow:hidden;transition:height .42s cubic-bezier(.2,.8,.2,1)}
   .lvl{position:absolute;inset:0 0 auto 0;width:100%;opacity:0;visibility:hidden;transform:scale(1.05);
     transition:opacity .4s ease,transform .42s cubic-bezier(.2,.8,.2,1)}
   .lvl.on{opacity:1;visibility:visible;transform:none}
@@ -704,6 +712,8 @@ const DATA = {};
 const $ = s => document.querySelector(s);
 /* Ułamki po polsku: 9.2 -> "9,2". Liczby całkowite zostają bez zmian. */
 const dec = v => (typeof v === 'number' ? v : parseFloat(v)).toLocaleString('pl');
+/* Theme accent as a plain colour string, for canvas APIs that cannot read CSS vars. */
+const accent = () => getComputedStyle(document.documentElement).getPropertyValue('--a1').trim() || '#FF7A45';
 
 /* ---------- reveal + chart triggers ---------- */
 const io = new IntersectionObserver((es)=>{
@@ -1207,7 +1217,7 @@ function tabGroup(root, attr, show){
       rec.map.invalidateSize(false);
       rec.map.fitBounds(rec.bounds,{padding:[22,22],animate:false});
       if(!rec.lines){
-        rec.lines=rec.tracks.map(t=>LF.polyline(t,{color:'#FF7A45',
+        rec.lines=rec.tracks.map(t=>LF.polyline(t,{color:accent(),
           weight:rec.id==='home'?1.4:2.4,opacity:.95}).addTo(rec.map));
       }
       if(rec.drawn)return; rec.drawn=true;
