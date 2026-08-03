@@ -495,8 +495,8 @@
     <div class="scene rv d1">
       <div class="scene-bar">
         <div class="tabwrap">
-          <span class="scene-hint"><span class="pts">↔</span> oddalaj kamerę</span>
-          <div class="lvltabs" role="tablist" aria-label="Poziom mapy — skala widoku" tabindex="0">
+          <span class="scene-hint"><span class="pts">↔</span> zmień skalę mapy</span>
+          <div class="lvltabs" role="tablist" aria-label="Skala mapy: dom, kraj, świat" tabindex="0">
             <button class="lvltab on" data-lvl="0" role="tab" aria-selected="true"><span class="e">🏠</span><span id="tab-home">Dom</span></button>
             <button class="lvltab" data-lvl="1" role="tab" aria-selected="false"><span class="e" id="tab-flag">🇵🇱</span><span id="tab-country">Polska</span></button>
             <button class="lvltab" data-lvl="2" role="tab" aria-selected="false"><span class="e">🌍</span>Świat</button>
@@ -523,7 +523,7 @@
     <div class="carousel">
       <div class="stage">
         <div class="slides" id="mapSlides" tabindex="0" role="group"
-             aria-roledescription="karuzela map" aria-label="Mapy Twoich tras — strzałki ← → przełączają"></div>
+             aria-roledescription="karuzela map" aria-label="Trasy biegów, przełączanie strzałkami w lewo i w prawo"></div>
         <button class="cbtn prev" id="mapPrev" type="button" aria-label="Poprzednia mapa">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
         </button>
@@ -553,9 +553,9 @@
     <h2 class="rv">Kiedy biegasz</h2>
     <p class="lead rv d1">Godzina startu (czas lokalny), zsumowana przez wszystkie lata. Radar po lewej pokazuje ulubioną porę, słupki po prawej — dzień tygodnia.</p>
     <div class="two">
-      <div class="rv d1"><div class="subh">Pora dnia (radar 24h — długość = liczba biegów)</div>
+      <div class="rv d1"><div class="subh">Pora startu (radar 24h — długość promienia to liczba biegów)</div>
         <div class="hourchart" id="hourChart"></div></div>
-      <div class="rv d2"><div class="subh">Dzień tygodnia</div>
+      <div class="rv d2"><div class="subh">Dzień tygodnia (liczba biegów)</div>
         <div class="bars" id="wdBars"></div></div>
     </div>
     <div class="edu rv">🌅 <b>Rutyna pory dnia.</b> Większość biegów pada w podobnym oknie godzin — to nie przypadek, to nawyk.</div>
@@ -567,7 +567,7 @@
     <h2 class="rv">Twój ulubiony<br>dystans</h2>
     <p class="lead rv d1">Rozkład długości biegów — od krótkich truchtów po najdłuższe wyprawy. Gdzie mieszka Twoja „codzienna" dawka? Przełącz zakres, żeby zobaczyć, czy przez lata się przesunęła.</p>
     <div class="distbar rv d1">
-      <div class="lvltabs" role="tablist" aria-label="Zakres histogramu dystansów">
+      <div class="lvltabs" role="tablist" aria-label="Zakres danych: ten sezon albo wszystkie lata">
         <button class="lvltab on" data-dist="year" role="tab" aria-selected="true" type="button"><span id="dist-tab-year">Ten sezon</span></button>
         <button class="lvltab" data-dist="all" role="tab" aria-selected="false" type="button">Wszystkie lata</button>
       </div>
@@ -634,7 +634,7 @@
       <p class="ez-sub rv d1">Suma cyfr daty urodzenia plus suma cyfr daty biegu, redukowana do jednej cyfry.
         Klasyczna numerologia. Zmień system liczbowy i zobacz, co się stanie z wynikiem.</p>
       <div class="distbar rv d1">
-        <div class="lvltabs" role="tablist" aria-label="System liczbowy">
+        <div class="lvltabs" role="tablist" aria-label="Podstawa systemu liczbowego: 10 albo 16">
           <button class="lvltab on" data-num="10" role="tab" aria-selected="true" type="button">dziesiętny</button>
           <button class="lvltab" data-num="16" role="tab" aria-selected="false" type="button">szesnastkowy</button>
         </div>
@@ -648,7 +648,7 @@
       <p class="ez-sub rv d1">Ostatnia i najmocniejsza hipoteza. Po lewej surowy ranking, po prawej ten sam
         ranking po odjęciu temperatury powietrza i kilometrażu z poprzedzających siedmiu dni.</p>
       <div class="distbar rv d1">
-        <div class="lvltabs" role="tablist" aria-label="Wersja rankingu znaków">
+        <div class="lvltabs" role="tablist" aria-label="Ranking znaków: surowy albo skorygowany o pogodę">
           <button class="lvltab on" data-zod="raw" role="tab" aria-selected="true" type="button">surowo</button>
           <button class="lvltab" data-zod="resid" role="tab" aria-selected="false" type="button">po odjęciu pogody</button>
         </div>
@@ -841,7 +841,7 @@ heroObs.observe($('.hero'));
         style="font-size:30px;text-anchor:middle;dominant-baseline:central">🏠</text></g>`;
     // home drawn LAST so it never hides behind a place label
     map.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img"
-        aria-label="Mapa kraju: miejsca biegów poza domem, podpisane nazwami">
+        aria-label="Mapa Polski z miejscami poza Wrocławiem, w których biegałeś, podpisanymi nazwą i liczbą biegów">
       <path class="pl-outline" d="${P.outline}"/>${pins}${homeMark}</svg>`;
   }
 })();
@@ -883,7 +883,7 @@ function _shotMode(){
     <div class="num">${String(lw).split('.')[0]}<span class="u">${lw%1?'.'+String(lw).split('.')[1]:''} km</span></div></div>`;
 
   if(r.race&&r.race.length){
-    h+='<div class="rec-cap">Rekordy wyścigowe · rekord vs forma dziś (Garmin)</div><div class="rec-race">';
+    h+='<div class="rec-cap">Rekord vs prognoza Garmina na dziś</div><div class="rec-race">';
     h+=r.race.map(d=>`<div class="rtile"><div class="rec-lbl">${esc(d.label)}</div>
       <div class="t">${d.time}</div><div class="pace">${d.pace} / km</div>`+
       (d.pred?`<div class="pred">${ICON.flame}<span class="pv">prognoza ${d.pred.time}</span><span class="d">${d.pred.faster?'−':'+'}${d.pred.delta}</span></div>`:'')+
@@ -894,12 +894,12 @@ function _shotMode(){
     h+='<div class="rec-sprint">'+r.sprint.map(d=>`<div class="rtile"><div class="rec-lbl">${esc(d.label)}</div><div class="t">${d.time}</div><div class="pace">${d.pace}/km</div></div>`).join('')+'</div>';
   }
   if(r.marathon){
-    h+=`<div class="rec-goal">${ICON.goal}<span>Następny cel wg Twojej formy — <span style="color:var(--cream)">maraton</span> (prognoza)</span><span class="m">${r.marathon.time}</span></div>`;
+    h+=`<div class="rec-goal">${ICON.goal}<span>Czego jeszcze nie ma — <span style="color:var(--cream)">maraton</span> (prognoza)</span><span class="m">${r.marathon.time}</span></div>`;
   }
   const km=n=>n.toLocaleString('pl').replace(/,/g,' ');
   h+=`<div class="rec-sup">
     <div class="rtile"><div class="rec-lbl">Łącznie</div><div class="t">${km(r.totals.km)}<span class="u"> km</span></div><div class="sub">${km(r.totals.runs)} biegów</div></div>
-    <div class="rtile"><div class="rec-lbl">Rekord. tydzień</div><div class="t">${r.peak_week.km}<span class="u"> km</span></div></div>
+    <div class="rtile"><div class="rec-lbl">Rekordowy tydzień</div><div class="t">${r.peak_week.km}<span class="u"> km</span></div></div>
     <div class="rtile"><div class="rec-lbl">Najszybszy rok</div><div class="t">${r.fastest_year.pace}</div><div class="sub">${r.fastest_year.year}</div></div></div>`;
   $('#rec-body').innerHTML=h;
 })();
@@ -1243,12 +1243,12 @@ function tabGroup(root, attr, show){
   const fmt=n=>n.toLocaleString('pl').replace(/,/g,' ');
   const climbed=s.peaks.filter(p=>p.x>=1).sort((a,b)=>b.h-a.h)[0];
   const next=s.peaks.find(p=>p.x<1);
-  $('#scaleElev').innerHTML=`<div class="lbl">Łączne przewyższenia</div>
+  $('#scaleElev').innerHTML=`<div class="lbl">Suma podbiegów</div>
     <div class="huge">${fmt(s.ascent_m)} m</div>
     <div class="cmp">⛰️ ${climbed?`wyżej niż <b>${climbed.name}</b> (${fmt(climbed.h)} m)`:''}${next?` — ${Math.round(next.x*100)}% drogi na ${next.name}`:''}</div>
     <div class="rows">${s.peaks.map(p=>`<div class="r"><span>${p.name} · ${fmt(p.h)} m</span><b>×${p.x}</b></div>`).join('')}</div>`;
   const c=s.distance.closest, home=(DATA.geo&&DATA.geo.home_city)||'dom';
-  $('#scaleDist').innerHTML=`<div class="lbl">Łączny dystans</div>
+  $('#scaleDist').innerHTML=`<div class="lbl">Suma dystansu</div>
     <div class="huge">${fmt(L.km)} km</div>
     <div class="cmp">🧭 to prawie tyle, co <b>${home} → ${c.city}</b> (${fmt(c.km)} km)</div>
     <div class="rows">${s.distance.cities.map(x=>`<div class="r"><span>${home} → ${x.city} · ${fmt(x.km)} km</span><b>×${(L.km/x.km).toFixed(1)}</b></div>`).join('')}</div>`;
