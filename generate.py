@@ -395,14 +395,34 @@ def main():
     for w in weekday:
         w["km"] = round(w["km"])
 
-    # distance histogram
+    # distance histogram — all-time, plus the latest season on its own. Someone with years
+    # of history is outnumbered by their own past in the all-time view, so a "favourite
+    # distance" chapter ends up answering "what did you used to run?" rather than "what do
+    # you run now?". Emitting both lets the page offer season vs all-time.
     buckets = [(0, 3, "<3"), (3, 5, "3–5"), (5, 7, "5–7"), (7, 10, "7–10"), (10, 15, "10–15"), (15, 99, "15+")]
-    dist_hist = [{"label": lbl, "runs": 0} for *_, lbl in buckets]
-    for r in runs:
-        for i, (lo, hi, _) in enumerate(buckets):
-            if lo <= r.distance_km < hi:
-                dist_hist[i]["runs"] += 1
-                break
+
+    def dist_histogram(rs):
+        h = [{"label": lbl, "runs": 0} for *_, lbl in buckets]
+        for r in rs:
+            for i, (lo, hi, _) in enumerate(buckets):
+                if lo <= r.distance_km < hi:
+                    h[i]["runs"] += 1
+                    break
+        return h
+
+    def median_km(rs):
+        km = sorted(r.distance_km for r in rs)
+        if not km:
+            return 0
+        mid = len(km) // 2
+        return round(km[mid] if len(km) % 2 else (km[mid - 1] + km[mid]) / 2, 1)
+
+    dist_hist = dist_histogram(runs)
+    season = max(r.start_time.year for r in runs)
+    season_runs = [r for r in runs if r.start_time.year == season]
+    dist_hist_year = {"year": season, "runs": len(season_runs),
+                      "hist": dist_histogram(season_runs),
+                      "median": median_km(season_runs), "median_all": median_km(runs)}
 
     def best_at(lo, hi):
         cand = [r for r in runs if lo <= r.distance_km <= hi and r.duration_s]
@@ -495,7 +515,8 @@ def main():
             fastest_year={"year": fastest_year["year"], "pace": fastest_year["pace"]},
             fallback_5k=best_at(4.8, 5.2), fallback_10k=best_at(9.5, 10.5)),
         "regions": regions, "poland": cmap, "weekday": weekday, "hours": hours,
-        "dist_hist": dist_hist, "moon": moon_list, "fav_moon": fav_moon,
+        "dist_hist": dist_hist, "dist_hist_year": dist_hist_year,
+        "moon": moon_list, "fav_moon": fav_moon,
         "zodiac": sorted(zodiac_list, key=lambda z: -z["runs"]), "strongest_sign": strongest,
         "maps": build_maps(runs, home, home_city), "scale": scale,
     }
