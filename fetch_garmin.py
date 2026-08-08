@@ -46,9 +46,22 @@ def _login():
         g = Garmin()
         g.login(TOKENS)                       # reuse saved tokens
         return g
-    except Exception:
-        email = os.getenv("GARMIN_EMAIL") or input("Garmin e-mail: ").strip()
-        pwd = os.getenv("GARMIN_PASSWORD") or getpass.getpass("Garmin password: ")
+    except Exception as token_err:
+        email = os.getenv("GARMIN_EMAIL")
+        pwd = os.getenv("GARMIN_PASSWORD")
+        # Saved tokens expire after a couple of weeks. Interactively that is fine —
+        # ask and move on. In CI there is no terminal, and falling through to
+        # input() buried the real cause under "EOFError: EOF when reading a line".
+        if not (email and pwd) and not sys.stdin.isatty():
+            sys.exit(
+                f"Garmin token expired or rejected: {token_err}\n"
+                f"Tokens tried: {TOKENS}\n"
+                "No terminal to ask on, and GARMIN_EMAIL / GARMIN_PASSWORD are not set.\n"
+                "Fix: refresh the saved token locally and update the GARMIN_TOKENS secret,\n"
+                "or set GARMIN_EMAIL and GARMIN_PASSWORD so this can re-login on its own."
+            )
+        email = email or input("Garmin e-mail: ").strip()
+        pwd = pwd or getpass.getpass("Garmin password: ")
         g = Garmin(email, pwd)
         g.login()
         _save_tokens(g)
