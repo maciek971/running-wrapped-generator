@@ -1,0 +1,21 @@
+# Validated local dependency snapshot; update deliberately with the test suite.
+certifi==2026.6.17
+cffi==2.0.0
+charset-normalizer==3.4.7
+curl_cffi==0.15.0
+garmin-fit-sdk==21.208.0
+garminconnect==0.3.6
+idna==3.18
+iniconfig==2.3.0
+markdown-it-py==4.2.0
+mdurl==0.1.2
+packaging==26.2
+pluggy==1.6.0
+pycparser==3.0
+Pygments==2.20.0
+pytest==9.1.1
+PyYAML==6.0.3
+requests==2.34.2
+rich==15.0.0
+ua-generator==2.1.2
+urllib3==2.7.0

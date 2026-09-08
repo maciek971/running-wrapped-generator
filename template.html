@@ -500,6 +500,7 @@
     <div class="kicker rv">Rozdział 7 — jak trenujesz</div>
     <h2 class="rv">Strefy tętna,<br>rok po roku</h2>
     <p class="lead rv d1">Rozkład czasu w strefach tętna, rok po roku (odkąd zegarek zapisuje HR). W ostatnim roku <b><span id="z-easy">–</span>% czasu</b> spędzasz w Z1+Z2, czyli spokojnie.</p>
+    <p class="edu rv">Czas w strefach jest szacunkiem: udział próbek tętna przeliczamy na czas biegu, zakładając równe odstępy między pomiarami. Nieregularny zapis i luki pomiarowe mogą zmieniać wynik; biegi bez pomiaru tętna nie są uwzględniane.</p>
     <div class="chart stack-row" id="zoneStack"></div>
     <div class="stack-lbl" id="zoneYears"></div>
     <div class="legend" id="zoneLegend"></div>
@@ -709,6 +710,10 @@
 <script>
 const DATA = {};
   const ZC = {Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)'};
+/* --HTML-ESCAPE-START-- */
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g,
+  c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+/* --HTML-ESCAPE-END-- */
 const $ = s => document.querySelector(s);
 /* Ułamki po polsku: 9.2 -> "9,2". Liczby całkowite zostają bez zmian. */
 const dec = v => (typeof v === 'number' ? v : parseFloat(v)).toLocaleString('pl');
@@ -867,7 +872,7 @@ heroObs.observe($('.hero'));
       <circle class="halo" cx="${p.fx}" cy="${p.fy}" r="${(r*0.9).toFixed(1)}"/>
       <line class="leader" x1="${(p.fx+r*0.45).toFixed(1)}" y1="${p.fy}" x2="${(lx-5).toFixed(1)}" y2="${p.ly.toFixed(1)}"/>
       <text class="emo" x="${p.fx}" y="${p.fy}" style="font-size:${r.toFixed(1)}px">🏃</text>
-      <text class="plbl" x="${lx.toFixed(1)}" y="${p.ly.toFixed(1)}"><tspan class="ln">${p.names.slice(0,2).join(' · ')}</tspan><tspan class="lc" dx="9">${p.count}</tspan></text>
+      <text class="plbl" x="${lx.toFixed(1)}" y="${p.ly.toFixed(1)}"><tspan class="ln">${escapeHtml(p.names.slice(0,2).join(' · '))}</tspan><tspan class="lc" dx="9">${p.count}</tspan></text>
     </g>`;}).join('');
     const homeMark=`<g class="pl-home">
       <circle cx="${home.x}" cy="${home.y}" r="22" fill="var(--ink)" opacity="0.92"/>
@@ -1191,10 +1196,10 @@ function tabGroup(root, attr, show){
   const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
   slides.innerHTML=maps.map(m=>`<div class="slide">
       <div class="lmap"></div><div class="grad"></div>
-      <div class="cap"><div class="t">${m.title}</div><div class="s">${m.subtitle}</div></div>
+      <div class="cap"><div class="t">${escapeHtml(m.title)}</div><div class="s">${escapeHtml(m.subtitle)}</div></div>
     </div>`).join('');
   dots.innerHTML=maps.map((_,i)=>`<button type="button" role="tab" data-i="${i}"
-      aria-label="Mapa ${i+1}: ${maps[i].title}" class="${i===0?'on':''}"><i></i></button>`).join('');
+      aria-label="Mapa ${i+1}: ${escapeHtml(maps[i].title)}" class="${i===0?'on':''}"><i></i></button>`).join('');
   const slideEls=[...slides.children];
   const built=[];
   function build(i){

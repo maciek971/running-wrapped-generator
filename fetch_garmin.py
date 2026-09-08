@@ -196,8 +196,12 @@ def main():
             break
         start += 100
 
-    todo = [a for a in summaries if str(a["activityId"]) not in manifest]
+    todo = [a for a in summaries
+            if str(a["activityId"]) not in manifest
+            or not (fit / f"{a['activityId']}.fit").is_file()
+            or (fit / f"{a['activityId']}.fit").stat().st_size == 0]
     print(f"{len(summaries)} activities; {len(todo)} new to download.")
+    failed = []
     for i, a in enumerate(todo, 1):
         aid = str(a["activityId"])
         try:
@@ -205,16 +209,24 @@ def main():
             with zipfile.ZipFile(io.BytesIO(blob)) as z:
                 fits = [n for n in z.namelist() if n.lower().endswith(".fit")]
                 if not fits:
-                    continue
-                (fit / f"{aid}.fit").write_bytes(z.read(fits[0]))
+                    raise ValueError("download contains no FIT file")
+                content = z.read(fits[0])
+                if not content:
+                    raise ValueError("download contains an empty FIT file")
+                (fit / f"{aid}.fit").write_bytes(content)
             manifest[aid] = {"fit_file": f"{aid}.fit",
                              "name": a.get("activityName") or "",
                              "start_time": a.get("startTimeGMT", "")}
             man_path.write_text(json.dumps(manifest, ensure_ascii=False))
         except Exception as exc:  # noqa: BLE001
+            failed.append(aid)
             print(f"  skip {aid}: {exc}")
         if i % 25 == 0 or i == len(todo):
             print(f"  {i}/{len(todo)}")
+    if failed:
+        sys.exit(f"Incomplete Garmin refresh: {len(failed)} downloads failed "
+                 f"({', '.join(failed)}). Successful downloads were saved; "
+                 "rerun to retry. Page generation/publication must not proceed.")
     print(f"✓ cache ready at {cache} ({len(manifest)} activities)")
 
 
