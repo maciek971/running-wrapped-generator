@@ -261,7 +261,7 @@
   .slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .4s ease}
   .slide.active{opacity:1;visibility:visible}
   .slide .lmap{position:absolute;inset:0;background:#0c0c11}
-  .slide .lmap .leaflet-tile{filter:saturate(.6) brightness(.92)}
+  .slide .lmap .leaflet-tile{filter:invert(.92) hue-rotate(180deg) saturate(.3) brightness(.85)}
   /* route lines drawn on the Leaflet overlay get a warm glow + draw animation */
   .slide path.route{fill:none;stroke:var(--a1);stroke-linejoin:round;stroke-linecap:round;
     filter:drop-shadow(0 0 3px color-mix(in srgb, var(--a2) 70%, transparent))}
@@ -272,7 +272,9 @@
   .slide .cap .s{color:var(--cream);opacity:.85;font-size:14px;margin-top:3px}
   .slide .grad{position:absolute;inset:0;z-index:400;pointer-events:none;
     background:linear-gradient(0deg,rgba(8,8,12,.85),rgba(8,8,12,0) 45%)}
-  .leaflet-control-attribution{display:none}
+  .leaflet-control-attribution{background:rgba(255,255,255,.9)!important;color:#222;font-size:10px}
+  .leaflet-control-attribution a{color:#175c38}
+  .leaflet-bottom.leaflet-right{right:10px;bottom:6px}
   /* nav arrows — high-contrast pills that lift off the dark map */
   .cbtn{position:absolute;top:50%;transform:translateY(-50%);z-index:600;cursor:pointer;
     width:48px;height:48px;display:flex;align-items:center;justify-content:center;
@@ -1205,10 +1207,13 @@ function tabGroup(root, attr, show){
   function build(i){
     if(built[i])return built[i];
     const m=maps[i], el=slideEls[i].querySelector('.lmap');
-    const map=LF.map(el,{preferCanvas:true,zoomControl:false,attributionControl:false,dragging:false,
+    const map=LF.map(el,{preferCanvas:true,zoomControl:false,attributionControl:true,dragging:false,
       scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,
       touchZoom:false,zoomAnimation:false,fadeAnimation:false});
-    LF.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
+    LF.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:18,
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
     const bounds=LF.latLngBounds([]);
     m.tracks.forEach(t=>t.forEach(p=>bounds.extend(p)));
     return built[i]={map,bounds,tracks:m.tracks,id:m.id,lines:null};

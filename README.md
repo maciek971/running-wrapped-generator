@@ -75,7 +75,7 @@ it used on every run, so you always know):
 
 Credit: data via [garminconnect](https://github.com/cyberjunky/python-garminconnect) +
 [garmin-fit-sdk](https://github.com/garmin/fit-python-sdk); borders from
-[Natural Earth](https://www.naturalearthdata.com/); maps © OpenStreetMap / CARTO.
+[Natural Earth](https://www.naturalearthdata.com/); maps © OpenStreetMap contributors.
 
 ## Reliability checks
 
@@ -92,3 +92,5 @@ successful downloads remain saved and the next run retries missing/empty files.
 HR zone durations are estimates based on sample proportions multiplied by running
 time, assuming equally spaced measurements. Irregular recording and missing HR
 samples can bias these estimates; runs without HR are excluded from zone totals.
+
+Map tiles use the standard OpenStreetMap endpoint without an API key. Tiles load only when a map is viewed; browser caching and the default Referer are preserved. Keep the visible attribution and follow https://operations.osmfoundation.org/policies/tiles/. The service is best-effort and is not intended for bulk downloads or offline prefetching.
