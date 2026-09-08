@@ -46,7 +46,7 @@ jobs:
           cp .engine/*.py .
           cp -r .engine/assets .
           cp .engine/requirements.txt .
-          rm -rf .engine
+          cp .engine/requirements.lock .
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -54,7 +54,17 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.lock
+
+      - name: Set up Node for template checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test engine and personal template before fetching
+        run: |
+          python -m pytest -q .engine/tests
+          node .engine/tools/test_template.mjs template.html
 
       - name: Restore Garmin tokens
         env:
@@ -71,7 +81,7 @@ jobs:
         run: |
           python fetch_garmin.py
           python generate.py
-          test -s index.html || { echo "index.html was not generated"; exit 1; }
+          node .engine/tools/test_template.mjs index.html
 
       - name: Persist refreshed cache back to this repo
         run: |

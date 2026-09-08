@@ -8,6 +8,7 @@ and template.html; writes data.json and a self-contained index.html.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import Counter, defaultdict
 from datetime import date, timedelta, timezone
@@ -37,7 +38,8 @@ _STOP = {"tempo", "interwały", "interwaly", "bieg", "trening", "rozbieganie", "
 def fmt_pace(sec_per_km):
     if not sec_per_km:
         return None
-    return f"{int(sec_per_km // 60)}:{int(round(sec_per_km % 60)):02d}"
+    minutes, seconds = divmod(round(sec_per_km), 60)
+    return f"{minutes}:{seconds:02d}"
 
 
 _RACE = [("5k", "5 km", 5.0), ("10k", "10 km", 10.0), ("half", "½ maraton", 21.0975)]
@@ -560,6 +562,7 @@ def main():
     briefing = build_briefing(runs, data, home)   # ranked personal hooks + run titles
     (HERE / "insights.json").write_text(json.dumps(briefing, ensure_ascii=False, indent=1))
     _inline(data)
+    validate_output(HERE)
     print(f"✓ {data['lifetime']['runs']} runs · {data['lifetime']['km']} km · "
           f"home={home_city} ({home_country}) · countries={[c['name'] for c in countries]}")
     print(f"  pins={[ (p['name'],p['count']) for p in (cmap['places'] if cmap else []) ]}")
@@ -567,8 +570,34 @@ def main():
           f"({len(briefing['events'])} events, {len(briefing['notable_runs'])} notable runs)")
 
 
+def validate_output(directory):
+    """Reject empty, non-finite or mismatched data before a page is published."""
+    def invalid_constant(value):
+        raise ValueError(f"Non-finite number in generated data: {value}")
+
+    directory = Path(directory)
+    data = json.loads((directory / "data.json").read_text(encoding="utf-8"),
+                      parse_constant=invalid_constant)
+    lifetime = data.get("lifetime", {})
+    if not lifetime.get("runs", 0) > 0 or not lifetime.get("km", 0) > 0:
+        raise ValueError("Generated data must contain running activities and distance")
+    if not data.get("years") or not isinstance(data.get("zones_by_year"), list):
+        raise ValueError("Generated data is missing year/zone series")
+    html = (directory / "index.html").read_text(encoding="utf-8")
+    matches = re.findall(r"^\s*const DATA = (.+);\s*$", html, re.MULTILINE)
+    if len(matches) != 1:
+        raise ValueError("Page must contain exactly one inline DATA assignment")
+    if "<" in matches[0]:
+        raise ValueError("Inline data contains an unsafe HTML boundary")
+    if json.loads(matches[0], parse_constant=invalid_constant) != data:
+        raise ValueError("Page data does not match data.json")
+
+
 def _inline(data):
     compact = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    # HTML parses script boundaries before JavaScript parses the JSON string.
+    for char in ("<", ">", "&", "\u2028", "\u2029"):
+        compact = compact.replace(char, f"\\u{ord(char):04x}")
     tpl = (HERE / "template.html").read_text(encoding="utf-8")
     lines = tpl.split("\n")
     idx = [i for i, ln in enumerate(lines) if ln.lstrip().startswith("const DATA =")]

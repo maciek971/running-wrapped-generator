@@ -18,7 +18,7 @@ Wrapped, and it walks you through login, your colors, and a story tailored to yo
 ## Manual use (without Claude)
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.lock
 python fetch_garmin.py              # type your Garmin login (once); auto-writes
                                     # birth year + resting HR into me.json
 python generate.py                  # -> index.html
@@ -76,3 +76,19 @@ it used on every run, so you always know):
 Credit: data via [garminconnect](https://github.com/cyberjunky/python-garminconnect) +
 [garmin-fit-sdk](https://github.com/garmin/fit-python-sdk); borders from
 [Natural Earth](https://www.naturalearthdata.com/); maps © OpenStreetMap / CARTO.
+
+## Reliability checks
+
+Use `python -m pytest -q` and `node tools/test_template.mjs` (Node 22+) before
+shipping changes. `generate.py` validates that its inline page data matches
+`data.json`, contains finite JSON numbers and includes running totals/year series.
+Run `node tools/test_template.mjs index.html` to check the generated JavaScript too.
+`requirements.lock` records the tested dependency snapshot; update it deliberately
+and rerun the checks. The manual `requirements.txt` ranges remain available for
+compatible dependency upgrades.
+
+A failed, missing-FIT or empty-FIT download makes fetching exit unsuccessfully;
+successful downloads remain saved and the next run retries missing/empty files.
+HR zone durations are estimates based on sample proportions multiplied by running
+time, assuming equally spaced measurements. Irregular recording and missing HR
+samples can bias these estimates; runs without HR are excluded from zone totals.
