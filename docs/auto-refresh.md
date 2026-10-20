@@ -50,6 +50,7 @@ __pycache__/
 # engine is overlaid at build time — never commit it here:
 .engine/
 fetch_garmin.py
+backfill_weather.py
 generate.py
 geo.py
 garmin_records.py

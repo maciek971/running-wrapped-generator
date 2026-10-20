@@ -589,16 +589,35 @@ def validate_output(directory):
         raise ValueError("Page must contain exactly one inline DATA assignment")
     if "<" in matches[0]:
         raise ValueError("Inline data contains an unsafe HTML boundary")
-    if json.loads(matches[0], parse_constant=invalid_constant) != data:
+    tpl = (directory / "template.html").read_text(encoding="utf-8")
+    if json.loads(matches[0], parse_constant=invalid_constant) != page_data(data, tpl):
         raise ValueError("Page data does not match data.json")
 
 
+_DATA_DECL = re.compile(r"\bconst\s+DATA\s*=(?!=)")
+_DATA_USE = re.compile(r"\bDATA\b(?:\s*\.\s*(\w+)|\s*\[\s*(['\"])(\w+)\2\s*\])?")
+
+
+def page_data(data, tpl):
+    """The part of `data` the page actually reads: only top-level keys the template
+    names as DATA.key / DATA["key"]. Anything else (a computed key, DATA handed on
+    whole, destructuring) can't be told statically, so then the page keeps it all.
+    data.json stays complete either way; this only keeps unused data off the page."""
+    keys = set()
+    for m in _DATA_USE.finditer(_DATA_DECL.sub("", tpl)):
+        key = m.group(1) or m.group(3)
+        if not key:
+            return data
+        keys.add(key)
+    return {k: v for k, v in data.items() if k in keys} if keys else data
+
+
 def _inline(data):
-    compact = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    tpl = (HERE / "template.html").read_text(encoding="utf-8")
+    compact = json.dumps(page_data(data, tpl), ensure_ascii=False, separators=(",", ":"))
     # HTML parses script boundaries before JavaScript parses the JSON string.
     for char in ("<", ">", "&", "\u2028", "\u2029"):
         compact = compact.replace(char, f"\\u{ord(char):04x}")
-    tpl = (HERE / "template.html").read_text(encoding="utf-8")
     lines = tpl.split("\n")
     idx = [i for i, ln in enumerate(lines) if ln.lstrip().startswith("const DATA =")]
     assert len(idx) == 1, f"template needs exactly one `const DATA =` line ({len(idx)} found)"
