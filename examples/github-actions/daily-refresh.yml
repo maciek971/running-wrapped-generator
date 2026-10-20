@@ -80,6 +80,7 @@ jobs:
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
         run: |
           python fetch_garmin.py
+          python backfill_weather.py || echo "Weather fetch failed; building without it."
           python generate.py
           node .engine/tools/test_template.mjs index.html
 

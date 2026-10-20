@@ -24,7 +24,7 @@ python fetch_garmin.py              # type your Garmin login (once); auto-writes
 python generate.py                  # -> index.html
 open index.html
 ```
-Or just `./make.sh` (fetch + generate). Re-run anytime to refresh.
+Or just `./make.sh` (fetch + optional air temperature via `backfill_weather.py` + generate). Re-run anytime to refresh.
 
 ## Auto-refresh (advanced, optional)
 Want a page that **updates itself daily** from Garmin, with no local machine involved? See

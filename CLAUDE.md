@@ -121,4 +121,7 @@ itself daily via GitHub Actions, see [`docs/auto-refresh.md`](docs/auto-refresh.
 - `generate.py` — FIT cache + `me.json` → `data.json` + `insights.json`, inlined into
   `template.html` → `index.html`. Helpers: `lib_fit.py` (FIT reader), `lib_strava.py`/
   `lib_merge.py` (Strava add + dedup), `geo.py` (country/outline), `lib_insights.py` (ranks hooks).
+  The page gets only the `DATA` keys the template reads (`DATA.key`); `data.json` keeps them all.
+- `backfill_weather.py` — optional: air temperature per run (Open-Meteo, no key) into
+  `<cache>/weather.json` for the folklore chapter. Incremental; `make.sh` runs it best-effort.
 - `insights.json` — author briefing for step 5. · `assets/world_countries.geo.json` — offline borders.
